@@ -1,0 +1,2 @@
+pm2 start "C:\laragon\bin\php\php.exe" --name laravel-queue -- "artisan queue:work --sleep=3 --tries=3 --timeout=90"
+pm2 save

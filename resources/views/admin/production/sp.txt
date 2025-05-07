@@ -1,0 +1,161 @@
+@extends('admin.app')
+
+@section('content')
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card my-4">
+                <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
+                    <div class="bg-gradient-primary shadow-primary border-radius-lg pt-4 pb-3">
+                        <h6 class="text-white text-capitalize ps-3">Start Production Process</h6>
+                    </div>
+                </div>
+                <div class="card-body px-0 pb-2">
+                    <div class="container">
+                        <!-- Option 1: Scan QR Code -->
+                        <h6>Option 1: Scan QR Code</h6>
+                        <button class="btn btn-primary mb-3" id="startScannerButton">
+                            Scan QR Code
+                        </button>
+                        <div id="qrScannerContainer" class="mt-4" style="display: none;">
+                            <div id="qrVideoContainer" style="width: 100%;"></div>
+                            <button class="btn btn-danger mt-3" id="stopScannerButton">Stop Scanner</button>
+                        </div>
+                        <hr class="my-4">
+                        <!-- Production Form -->
+                        <h6>Production Form</h6>
+                        <form id="productionForm" method="POST" action="{{ route('production.start') }}">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="purchaseOrderNumberInput">Purchase Order Number:</label>
+                                <input type="text" name="purchase_order_number" id="purchaseOrderNumberInput" class="form-control" readonly required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="itemIdInput">Item ID:</label>
+                                <input type="text" name="item_id" id="itemIdInput" class="form-control" readonly required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="productionLineSelect">Production Line:</label>
+                                <select name="production_line_id" id="productionLineSelect" class="form-control" required>
+                                    <option value="">Select a production line</option>
+                                    @foreach($productionLines as $line)
+                                        <option value="{{ $line->id }}">{{ $line->line_name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="startProductionButton" disabled>Start Production</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<script type="text/javascript" src="{{ asset('js/grid.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/version.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/detector.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/formatinf.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/errorlevel.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/bitmat.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/datablock.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/bmparser.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/datamask.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/rsdecoder.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/gf256poly.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/gf256.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/decoder.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/qrcode.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/findpat.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/alignpat.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/databr.js') }}"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const startScannerButton = document.getElementById('startScannerButton');
+        const stopScannerButton = document.getElementById('stopScannerButton');
+        const qrScannerContainer = document.getElementById('qrScannerContainer');
+        const purchaseOrderNumberInput = document.getElementById('purchaseOrderNumberInput');
+        const itemIdInput = document.getElementById('itemIdInput');
+        const productionLineSelect = document.getElementById('productionLineSelect');
+        const startProductionButton = document.getElementById('startProductionButton');
+
+        let video = document.createElement('video');
+        let canvasElement = document.createElement('canvas');
+        let canvas = canvasElement.getContext('2d');
+        let scanning = false;
+
+        // Function to check if all required fields are filled
+        function checkFormFields() {
+            if (purchaseOrderNumberInput.value && itemIdInput.value && productionLineSelect.value) {
+                startProductionButton.disabled = false;
+            } else {
+                startProductionButton.disabled = true;
+            }
+        }
+
+        function startQRScanner() {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(function (stream) {
+                scanning = true;
+                qrScannerContainer.style.display = 'block';
+                video.setAttribute('playsinline', true); // iOS compatibility
+                video.srcObject = stream;
+                video.play();
+                tick();
+                scan();
+            });
+        }
+
+        function tick() {
+            canvasElement.height = video.videoHeight;
+            canvasElement.width = video.videoWidth;
+            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+
+            if (scanning) {
+                requestAnimationFrame(tick);
+            }
+        }
+
+        function scan() {
+            try {
+                qrcode.decode();
+            } catch (e) {
+                if (scanning) {
+                    setTimeout(scan, 300);
+                }
+            }
+        }
+
+        qrcode.callback = function (data) {
+            try {
+                // Parse the QR data
+                const qrData = JSON.parse(data);
+                purchaseOrderNumberInput.value = qrData.purchase_order_number || '';
+                itemIdInput.value = qrData.item_id || '';
+                checkFormFields(); // Check if fields are filled after scanning
+            } catch (e) {
+                console.error('Invalid QR code data:', data);
+                alert('Scanned data is not valid.');
+            }
+
+            // Stop scanning
+            scanning = false;
+            video.srcObject.getTracks().forEach(track => track.stop());
+            qrScannerContainer.style.display = 'none';
+        };
+
+        startScannerButton.addEventListener('click', function () {
+            startQRScanner();
+        });
+
+        stopScannerButton.addEventListener('click', function () {
+            scanning = false;
+            video.srcObject.getTracks().forEach(track => track.stop());
+            qrScannerContainer.style.display = 'none';
+        });
+    });
+</script>
+
+@endsection

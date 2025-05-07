@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
+
+class RateLimiterServiceProvider extends ServiceProvider
+{
+    public function boot(): void
+    {
+        RateLimiter::for('customer-login', function ($request) {
+            return Limit::perMinute(5)->by($request->email.$request->ip());
+        });
+
+        RateLimiter::for('admin-login', function ($request) {
+            return Limit::perMinute(5)->by($request->email.$request->ip());
+        });
+
+        RateLimiter::for('2fa', function ($request) {
+            return Limit::perMinute(5)->by($request->ip());
+        });
+
+        RateLimiter::for('resend-2fa', function ($request) {
+            return Limit::perMinute(3)->by($request->ip());
+        });
+
+        RateLimiter::for('api', function ($request) {
+            return Limit::perMinute(60)->by(optional($request->user())->id ?: $request->ip());
+        });
+    }
+}

@@ -1,0 +1,289 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Quickbooks\QuickBooksAuthController;
+use App\Http\Controllers\QuickbookCustomerController;
+use App\Http\Controllers\EstimateController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\AdminLoginController;
+use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\ProductionController;
+use App\Http\Controllers\DeliveryController;
+use App\Http\Controllers\DefectController;
+
+use App\Http\Controllers\ItemsController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\BrandController;
+
+use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\WarehouseItemController;
+use App\Http\Controllers\TransferController;
+
+
+
+
+// Redirect '/' to the login page
+Route::get('/', function () {
+    return redirect()->route('login.form');
+});
+
+Route::get('/quickbooks/authorize', [QuickBooksAuthController::class, 'authorize']);
+Route::get('/quickbooks/callback', [QuickBooksAuthController::class, 'callback']);
+Route::get('/quickbooks/getAccessTokenByRefreshToken', [QuickBooksAuthController::class, 'getAccessTokenByRefreshToken']);
+Route::get('/quickbooks/getCustomers', [QuickbookCustomerController::class, 'getCustomers']);
+
+// ===========================
+// Customer Authentication Routes
+// ===========================
+
+// Customer login routes
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login.form');
+Route::post('/login', [LoginController::class, 'login'])->name('login');
+
+// Customer 2FA routes
+Route::middleware(['auth:web'])->group(function () {
+    Route::get('/2fa', [LoginController::class, 'show2faForm'])->name('customer.2fa');
+    Route::post('/2fa', [LoginController::class, 'verify2fa'])->name('customer.verify2fa');
+});
+
+// Password reset routes for QuickbooksCustomer
+Route::get('password/reset', [PasswordResetController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('password/email', [PasswordResetController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('password/reset/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+Route::post('password/reset', [PasswordResetController::class, 'reset'])->name('password.update');
+
+// Customer logout route
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+// ===========================
+// Customer Authenticated Routes with Session Expiry Check
+// ===========================
+Route::middleware(['auth:web'])->group(function () {
+    Route::get('/client/dashboard', function () {
+        return view('client.dashboard');
+    })->name('client.dashboard');
+
+    Route::get('/client/purchaseorder', [EstimateController::class, 'create'])->name('client.purchaseorder');
+
+    Route::get('/order/create', [EstimateController::class, 'create'])->name('estimates.create');
+
+    Route::post('/estimates', [EstimateController::class, 'store'])->name('estimates.store');
+
+    Route::post('/client/notification', [EstimateController::class, 'store'])->name('client.notification');
+    Route::post('/client/profile', [EstimateController::class, 'store'])->name('client.profile');
+
+    // Show the update password form (GET request)
+Route::get('/client/update-password', [QuickbookCustomerController::class, 'showUpdatePasswordForm'])
+->name('client.updatePasswordForm');
+
+// Handle password update (POST request)
+Route::post('/client/update-password', [QuickbookCustomerController::class, 'updatePassword'])
+->name('client.updatePassword');
+
+
+});
+
+Route::middleware('auth:web')->group(function () {
+    Route::get('/client/purchaseOrderHistory', [EstimateController::class, 'purchaseOrderHistory'])->name('client.purchaseOrderHistory');
+    Route::get('/client/canceledOrderHistory', [EstimateController::class, 'canceledOrderHistory'])->name('client.canceledOrderHistory');
+    Route::get('/client/viewOrderDetails/{id}', [EstimateController::class, 'viewOrderDetails'])->name('client.viewOrderDetails');
+    Route::get('/client/viewCanceledOrderDetails/{id}', [EstimateController::class, 'viewCanceledOrderDetails'])->name('client.viewCanceledOrderDetails');
+    Route::get('/client/downloadOrderPdf/{id}', [EstimateController::class, 'downloadOrderPdf'])->name('client.downloadOrderPdf');
+    Route::get('/client/print-order/{id}', [EstimateController::class, 'printOrder'])->name('client.printOrder');
+
+    Route::post('/client/{id}/cancel', [EstimateController::class, 'cancelOrder'])->name('client.cancelOrder');
+    Route::put('/client/update-order/{id}', [EstimateController::class, 'updateOrder'])->name('client.updateOrder');
+
+
+});
+
+
+// ===========================
+// Admin Authentication Routes
+// ===========================
+
+// Redirect '/' to the login page
+Route::get('/admin-login', function () {
+    return redirect()->route('admin.login.form');
+});
+
+// Admin login routes
+Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('admin.login.form');
+Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login');
+
+// Admin 2FA routes
+Route::middleware('auth:admin')->group(function () {
+    Route::get('/admin/2fa', [AdminLoginController::class, 'show2faForm'])->name('admin.2fa');
+    Route::post('/admin/2fa', [AdminLoginController::class, 'verify2fa'])->name('admin.verify2fa');
+});
+
+// Admin logout route
+Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
+
+Route::middleware(['auth:admin'])->group(function () {
+    Route::get('/admin/dashboard', function () {
+        return view('admin.dashboard');
+    })->name('admin.dashboard');
+
+    Route::get('/admin/users/customers', [AdminController::class, 'customers'])->name('admin.customers');
+    Route::get('/admin/users/customers/{id}', [AdminController::class, 'customerDetails'])->name('admin.customerDetails');
+
+
+    Route::get('admin/users/admins', [AdminController::class, 'index'])->name('admin.admins');
+    Route::post('admin/users/addAdmin', [AdminController::class, 'addAdmin'])->name('admin.addAdmin');
+    Route::put('admin/users/editAdmin/{id}', [AdminController::class, 'editAdmin'])->name('admin.editAdmin');
+    Route::delete('admin/users/deleteAdmin/{id}', [AdminController::class, 'deleteAdmin'])->name('admin.deleteAdmin');
+
+    Route::put('/admin/{id}/update', [AdminController::class, 'update'])->name('admin.update');
+
+    Route::get('/admin/orders/review', [AdminController::class, 'reviewOrders'])->name('admin.reviewOrders');
+    Route::post('/admin/orders/{id}/approve', [AdminController::class, 'approveOrder'])->name('admin.approveOrder');
+    Route::post('/admin/orders/{id}/decline', [AdminController::class, 'declineOrder'])->name('admin.declineOrder');
+    Route::get('/admin/orders/approved', [AdminController::class, 'approvedOrders'])->name('admin.approvedOrders');
+    Route::get('/admin/orders/declined', [AdminController::class, 'declinedOrders'])->name('admin.declinedOrders');
+    Route::get('/admin/orders/canceled', [AdminController::class, 'canceledOrders'])->name('admin.canceledOrders');
+
+    Route::get('/admin/orders/{id}/view', [AdminController::class, 'viewOrderDetails'])->name('admin.viewOrderDetails');
+
+    Route::get('/admin/orders/approved/{id}', [AdminController::class, 'viewApprovedOrderDetails'])->name('admin.viewApprovedOrderDetails');
+    Route::get('/admin/orders/declined/{id}', [AdminController::class, 'viewDeclinedOrderDetails'])->name('admin.viewDeclinedOrderDetails');
+    Route::get('/admin/orders/canceled/{id}', [AdminController::class, 'viewCanceledOrderDetails'])->name('admin.viewCanceledOrderDetails');
+
+    Route::get('/admin/production-lines', [AdminController::class, 'manageProductionLines'])->name('admin.productionLines');
+    Route::post('/admin/production-lines/{id}/assign-order', [AdminController::class, 'assignOrderToLine'])->name('admin.assignOrderToLine');
+    Route::post('/admin/production-lines/{id}/update-status', [AdminController::class, 'updateLineStatus'])->name('admin.updateLineStatus');
+    Route::post('/admin/production-lines/add', [AdminController::class, 'addProductionLine'])->name('admin.addProductionLine');
+    Route::post('/admin/production-lines/{id}/edit', [AdminController::class, 'editProductionLine'])->name('admin.editProductionLine');
+    Route::delete('/admin/production-lines/{id}/delete', [AdminController::class, 'deleteProductionLine'])->name('admin.deleteProductionLine');
+
+    Route::get('/admin/scheduled-orders', [AdminController::class, 'viewScheduledOrders'])->name('admin.scheduledOrders');
+Route::post('/admin/schedule/add', [AdminController::class, 'addSchedule'])->name('admin.addSchedule');
+Route::post('/admin/schedule/{id}/edit', [AdminController::class, 'editSchedule'])->name('admin.editSchedule');
+Route::delete('/admin/schedule/{id}/delete', [AdminController::class, 'deleteSchedule'])->name('admin.deleteSchedule');
+Route::post('/admin/schedules/add', [AdminController::class, 'addSchedule'])->name('admin.addSchedule');
+
+Route::get('/admin/scheduled-orders-calendar', [AdminController::class, 'viewScheduledOrdersCalendar'])->name('admin.scheduledOrdersCalendar');
+
+
+
+// Routes for managing production activities
+Route::get('/admin/production/manage', [ProductionController::class, 'viewManageProduction'])->name('admin.manageProduction');
+Route::post('/admin/production/start', [ProductionController::class, 'startProduction'])->name('admin.startProduction');
+Route::post('/admin/production/{id}/update-status', [ProductionController::class, 'updateStatus'])->name('admin.updateProductionStatus');
+Route::get('/admin/production/{log_id}/complete', [ProductionController::class, 'completeProduction'])->name('admin.completeProduction');
+Route::post('/admin/production/{log_id}/log-notes', [ProductionController::class, 'logNotes'])->name('admin.logProductionNotes');
+Route::get('/admin/production/calendar', [ProductionController::class, 'viewProductionCalendar'])->name('admin.productionCalendar');
+Route::post('/admin/production/upload-qr-image', [ProductionController::class, 'uploadQrImage'])->name('production.uploadQrImage');
+Route::get('/admin/production/select-order-item', [ProductionController::class, 'selectOrderItem'])->name('production.selectOrderItem');
+Route::get('/admin/production/fetch-scheduled-items', [ProductionController::class, 'fetchScheduledItems'])->name('production.fetchScheduledItems');
+
+Route::get('/admin/production/start', [ProductionController::class, 'viewStartProduction'])->name('production.start');
+Route::get('/production/complete/{log_id}', [ProductionController::class, 'completeProduction'])
+    ->name('production.complete');
+Route::post('/production/log-notes', [ProductionController::class, 'logNotes'])
+    ->name('production.logNotes');
+Route::put('/production/update/{id}', [ProductionController::class, 'updateProduction'])->name('production.update');
+Route::get('/production/download-qr/{log_id}', [ProductionController::class, 'downloadQrCode'])->name('production.downloadQr');
+Route::get('/production/download-qr/{log_id}', [ProductionController::class, 'downloadQrCode'])->name('production.downloadQr');
+
+
+
+
+
+
+// Routes for managing defect reporting activities under production
+Route::get('/admin/production/manageDefect', [DefectController::class, 'index'])->name('admin.manageDefects');
+Route::get('/admin/production/reportDefect', [DefectController::class, 'create'])->name('admin.reportDefect');
+
+
+
+Route::post('/admin/production/{id}/assess-severity', [ProductionController::class, 'assessSeverity'])->name('admin.assessSeverity');
+Route::post('/admin/production/{defect_id}/track-status', [ProductionController::class, 'trackStatus'])->name('admin.trackDefectStatus');
+Route::get('/admin/production/{item_id}/generate-report', [ProductionController::class, 'generateDefectReport'])->name('admin.generateDefectReport');
+Route::post('/admin/production/tag-batch', [ProductionController::class, 'tagBatch'])->name('admin.tagBatch');
+Route::post('/admin/production/{item_id}/capture-repair-history', [ProductionController::class, 'captureRepairHistory'])->name('admin.captureRepairHistory');
+Route::post('/admin/production/{defect_id}/escalate', [ProductionController::class, 'escalateDefect'])->name('admin.escalateDefect');
+
+
+Route::post('/store', [DefectController::class, 'store'])->name('defects.store');
+Route::get('/{id}/edit', [DefectController::class, 'edit'])->name('defects.edit');
+Route::post('/{id}/update', [DefectController::class, 'update'])->name('defects.update');
+Route::post('/{id}/log-notes', [DefectController::class, 'logNotes'])->name('defects.logNotes');
+
+
+Route::get('admin/deliveries/', [DeliveryController::class, 'index'])->name('admin.deliveries');
+Route::get('admin/deliveries/create', [DeliveryController::class, 'create'])->name('deliveries.create');
+Route::post('admin/deliveries/', [DeliveryController::class, 'store'])->name('deliveries.store');
+Route::get('admin/deliveries/{id}/edit', [DeliveryController::class, 'edit'])->name('deliveries.edit');
+Route::put('admin/deliveries/{id}', [DeliveryController::class, 'update'])->name('deliveries.update');
+Route::post('admin/deliveries/log-notes', [DeliveryController::class, 'logNotes'])->name('deliveries.logNotes');
+
+
+
+// Route::get('/admin/inventory/items', [ItemsController::class, 'index'])->name('inventory.items');
+// Route::get('/admin/inventory/create', [ItemsController::class, 'create'])->name('inventory.create');
+// Route::post('/admin/inventory/store', [ItemsController::class, 'store'])->name('inventory.store');
+
+Route::get('/admin/inventory/items', [ItemsController::class, 'index'])->name('inventory.items');
+Route::post('/admin/inventory/items/store', [ItemsController::class, 'storeItem'])->name('inventory.items.store');
+Route::put('/admin/inventory/items/{item}/update', [ItemsController::class, 'updateItem'])->name('inventory.items.update');
+Route::get('/admin/inventory/items/{item}/edit', [ItemsController::class, 'editItem'])->name('inventory.items.edit');
+Route::delete('/admin/inventory/items/{item}/delete', [ItemsController::class, 'deleteItem'])->name('inventory.items.destroy');
+Route::get('/admin/inventory/items/{item}', [ItemsController::class, 'show'])->name('inventory.items.show');
+
+
+
+
+Route::get('/admin/inventory/brands', [BrandController::class, 'index'])->name('inventory.brands');
+Route::post('/admin/inventory/brands/store', [BrandController::class, 'store'])->name('inventory.brands.store');
+Route::put('/admin/inventory/brands/{brand}/update', [BrandController::class, 'update'])->name('inventory.brands.update');
+Route::delete('/admin/inventory/brands/{brand}/delete', [BrandController::class, 'destroy'])->name('inventory.brands.destroy');
+
+
+
+Route::get('/admin/inventory/categories', [CategoryController::class, 'categories'])->name('inventory.categories');
+Route::post('/admin/inventory/categories/store', [CategoryController::class, 'storeCategory'])->name('inventory.categories.store');
+Route::put('/admin/inventory/categories/{category}/update', [CategoryController::class, 'updateCategory'])->name('inventory.categories.update');
+Route::delete('/admin/inventory/categories/{category}/delete', [CategoryController::class, 'deleteCategory'])->name('inventory.categories.destroy');
+
+
+Route::resource('warehouses', WarehouseController::class);
+Route::resource('warehouse-items', WarehouseItemController::class);
+
+
+    // Transfer routes
+    Route::get('/admin/inventory/transfers', [TransferController::class, 'index'])->name('inventory.transfers');
+    Route::get('/admin/inventory/transfers/create', [TransferController::class, 'create'])->name('inventory.transfers.create');
+    Route::post('/admin/inventory/transfers', [TransferController::class, 'store'])->name('inventory.transfers.store');
+    Route::get('/admin/inventory/transfers/{transfer}', [TransferController::class, 'show'])->name('inventory.transfers.show');
+    Route::get('/admin/inventory/items/{item}/locations', [TransferController::class, 'getItemLocations'])->name('inventory.items.locations');
+
+
+
+
+    Route::prefix('admin/inventory')->group(function () {
+        Route::get('/warehouses', [WarehouseController::class, 'index'])->name('inventory.warehouses');
+        Route::post('/warehouses/store', [WarehouseController::class, 'store'])->name('inventory.warehouses.store');
+        Route::put('/warehouses/update/{warehouse}', [WarehouseController::class, 'update'])->name('inventory.warehouses.update');
+        Route::delete('/warehouses/destroy/{warehouse}', [WarehouseController::class, 'destroy'])->name('inventory.warehouses.destroy');
+    });
+    
+
+});
+
+Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function () {
+    // Other admin routes...
+
+    // Routes for role management
+    Route::get('roles', [RoleController::class, 'index'])->name('roles');  // List roles
+    Route::post('roles', [RoleController::class, 'store'])->name('roles.store');  // Create a new role
+    Route::put('roles/{role}', [RoleController::class, 'update'])->name('roles.update');  // Update a role (handled via form modal submission)
+    Route::delete('roles/{role}', [RoleController::class, 'destroy'])->name('roles.delete');  // Delete a role (handled via form modal submission)
+});
+
+
+Route::get('/qr-scanner', function () {
+    return view('qr-scanner');
+})->name('qr.scan');
