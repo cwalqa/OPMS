@@ -13,11 +13,6 @@
     <p><strong>Client Email:</strong> {{ $order->client_email ?? 'N/A' }}</p>
     <p><strong>Approved At:</strong> {{ now()->toDayDateTimeString() }}</p>
 
-    <p>
-        <a href="{{ route('admin.orders.viewOrderDetails', $order->id) }}" target="_blank" style="color: #1d68a7;">
-            View Order Details in Admin Dashboard
-        </a>
-    </p>
 
     <p>Best regards, <br> {{ config('app.name') }} System</p>
 </body>
