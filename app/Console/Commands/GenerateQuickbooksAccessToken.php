@@ -95,33 +95,42 @@ class GenerateQuickbooksAccessToken extends Command
      * 
      * @return string|null
      */
-    private function getRefreshToken()
-    {
-        // Try to get from database settings table if it exists
-        try {
-            $setting = DB::table('settings')->where('key', 'quickbooks_refresh_token')->first();
-            if ($setting) {
-                return $setting->value;
-            }
-        } catch (\Exception $e) {
-            // Table might not exist, continue to next method
+    /**
+ * Get the refresh token from the primary database table or fallback sources.
+ *
+ * @return string|null
+ */
+private function getRefreshToken()
+{
+    try {
+        $token = \App\Models\QuickBooksToken::find(1); // Or use ->where('realm_id', $id)->first()
+        if ($token && !empty($token->refresh_token)) {
+            $this->line('Refresh token loaded from quickbooks_tokens table.');
+            return $token->refresh_token;
         }
-        
-        // Try to get from env
-        if (env('QUICKBOOKS_REFRESH_TOKEN')) {
-            return env('QUICKBOOKS_REFRESH_TOKEN');
-        }
-        
-        // Try to get from storage file
-        if (Storage::exists('quickbooks/tokens.json')) {
-            $tokens = json_decode(Storage::get('quickbooks/tokens.json'), true);
-            if (isset($tokens['refresh_token'])) {
-                return $tokens['refresh_token'];
-            }
-        }
-        
-        return null;
+    } catch (\Exception $e) {
+        $this->warn('Could not query quickbooks_tokens table: ' . $e->getMessage());
     }
+
+    // 2. Try to get from .env (legacy support)
+    if ($envToken = env('QUICKBOOKS_REFRESH_TOKEN')) {
+        $this->line('Refresh token loaded from .env.');
+        return $envToken;
+    }
+
+    // 3. Try to get from JSON file in storage
+    if (\Storage::exists('quickbooks/tokens.json')) {
+        $tokens = json_decode(\Storage::get('quickbooks/tokens.json'), true);
+        if (isset($tokens['refresh_token']) && !empty($tokens['refresh_token'])) {
+            $this->line('Refresh token loaded from tokens.json.');
+            return $tokens['refresh_token'];
+        }
+    }
+
+    $this->error('No valid refresh token found from any source.');
+    return null;
+}
+
     
     /**
      * Store tokens in available storage options
