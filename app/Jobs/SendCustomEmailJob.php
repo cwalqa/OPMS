@@ -16,6 +16,9 @@ class SendCustomEmailJob implements ShouldQueue
     protected $to;
     protected $subject;
     protected $body;
+    
+    // Add this property to make job synchronous
+    public $connection = 'sync';
 
     public function __construct($to, $subject, $body)
     {
@@ -26,7 +29,7 @@ class SendCustomEmailJob implements ShouldQueue
 
     public function handle()
     {
-        \Log::info("Running queued PHPMailer job to: {$this->to}");
+        \Log::info("Running PHPMailer job to: {$this->to}");
 
         $result = app(PHPMailerService::class)->send(
             $this->to,
@@ -34,6 +37,6 @@ class SendCustomEmailJob implements ShouldQueue
             $this->body
         );
 
-        \Log::info("Mail sent from queue: " . json_encode($result));
+        \Log::info("Mail sent: " . json_encode($result));
     }
 }

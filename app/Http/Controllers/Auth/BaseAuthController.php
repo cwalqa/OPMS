@@ -55,11 +55,24 @@ abstract class BaseAuthController extends Controller
         $user->two_factor_expires_at = now()->addMinutes($this->twoFactorExpireMinutes);
         $user->save();
 
-        // Send 2FA code via PHPMailer
-        $subject = $emailSubject;
+        // Generate email body
         $body = $this->generate2FAEmailBody($twoFactorCode);
-        \App\Jobs\Send2FACodeMailJob::dispatch($user->email, $subject, $body);
-        Log::info("2FA code sent to {$user->email}: {$twoFactorCode}");
+        
+        try {
+            // Send directly using PHPMailer instead of queueing
+            $mailerService = app(PHPMailerService::class);
+            $result = $mailerService->send(
+                $user->email,
+                $emailSubject,
+                $body
+            );
+            
+            Log::info("2FA code sent directly to {$user->email}", ['result' => $result]);
+        } catch (\Exception $e) {
+            Log::error("Failed to send 2FA code: " . $e->getMessage());
+            // Optional: Queue as fallback
+            \App\Jobs\Send2FACodeMailJob::dispatch($user->email, $emailSubject, $body);
+        }
 
         return $twoFactorCode;
     }

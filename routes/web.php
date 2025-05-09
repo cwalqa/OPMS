@@ -43,11 +43,15 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 Route::prefix('quickbooks')->group(function () {
-    Route::get('/authorize', [QuickBooksAuthController::class, 'authorize']);
-    Route::get('/callback', [QuickBooksAuthController::class, 'callback']);
+    Route::get('/authorize', [QuickBooksAuthController::class, 'authorize'])->name('quickbooks.authorize');
+    Route::get('/callback', [QuickBooksAuthController::class, 'callback'])->name('quickbooks.callback');
+    Route::get('/refresh', [QuickBooksAuthController::class, 'refreshToken'])->name('quickbooks.refresh');
+    Route::get('/status', [QuickBooksAuthController::class, 'checkStatus'])->name('quickbooks.status');
+    Route::get('/disconnect', [QuickBooksAuthController::class, 'disconnect'])->name('quickbooks.disconnect');
     Route::get('/getAccessTokenByRefreshToken', [QuickBooksAuthController::class, 'getAccessTokenByRefreshToken']);
     Route::get('/getCustomers', [QuickbookCustomerController::class, 'getCustomers']);
 });
+
 
 /*
 |--------------------------------------------------------------------------

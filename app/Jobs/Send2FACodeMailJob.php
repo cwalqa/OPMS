@@ -7,7 +7,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Foundation\Bus\Dispatchable;
-use App\Services\PHPMailerService;
 use Illuminate\Support\Facades\Mail;
 
 class Send2FACodeMailJob implements ShouldQueue
@@ -17,6 +16,9 @@ class Send2FACodeMailJob implements ShouldQueue
     protected $email;
     protected $subject;
     protected $body;
+    
+    // Add this property to make job synchronous
+    public $connection = 'sync';
 
     public function __construct(string $email, string $subject, string $body)
     {
@@ -26,19 +28,19 @@ class Send2FACodeMailJob implements ShouldQueue
     }
 
     public function handle()
-{
-    \Log::info("Running queued Mail job to: {$this->email}");
+    {
+        \Log::info("Running Mail job to: {$this->email}");
 
-    try {
-        Mail::html($this->body, function ($message) {
-            $message->to($this->email)
-                    ->subject($this->subject);
-        });
+        try {
+            Mail::html($this->body, function ($message) {
+                $message->to($this->email)
+                        ->subject($this->subject);
+            });
 
-        \Log::info("Mail sent from queue to {$this->email}");
-    } catch (\Throwable $e) {
-        \Log::error("Laravel Mail failed in queued job to {$this->email}: " . $e->getMessage());
-        throw new \Exception("Laravel Mail failed to send 2FA code.");
+            \Log::info("Mail sent to {$this->email}");
+        } catch (\Throwable $e) {
+            \Log::error("Laravel Mail failed to {$this->email}: " . $e->getMessage());
+            throw new \Exception("Laravel Mail failed to send 2FA code.");
+        }
     }
-}
 }
