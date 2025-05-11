@@ -81,19 +81,28 @@ abstract class BaseAuthController extends Controller
      * Generate HTML email body for 2FA code
      */
     protected function generate2FAEmailBody($code)
-    {
-        return "
-            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee;'>
-                <h2 style='color: #333;'>Two-Factor Authentication Code</h2>
-                <p>Your verification code is:</p>
-                <div style='background-color: #f5f5f5; padding: 10px; font-size: 24px; letter-spacing: 3px; text-align: center; margin: 20px 0;'>
-                    <strong>{$code}</strong>
-                </div>
-                <p>This code will expire in {$this->twoFactorExpireMinutes} minutes.</p>
-                <p>If you did not request this code, please secure your account and contact support immediately.</p>
+{
+    return '
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>2FA Code</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 5px rgba(0,0,0,0.1);">
+            <h2 style="color: #333;">Two-Factor Authentication Code</h2>
+            <p style="font-size: 16px;">Your verification code is:</p>
+            <div style="font-size: 28px; font-weight: bold; letter-spacing: 3px; background-color: #eef2f7; padding: 12px; text-align: center; border-radius: 6px;">
+                ' . $code . '
             </div>
-        ";
-    }
+            <p style="font-size: 14px; margin-top: 20px;">This code will expire in ' . $this->twoFactorExpireMinutes . ' minutes.</p>
+            <p style="font-size: 12px; color: #777;">If you did not request this, please secure your account immediately.</p>
+        </div>
+    </body>
+    </html>';
+}
+
 
     /**
      * Verify 2FA code
