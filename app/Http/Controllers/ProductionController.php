@@ -451,17 +451,3 @@ class ProductionController extends Controller
     }
 }
 
-   
-
-
-
-
-
-
-
-
-
-
-
-
-
