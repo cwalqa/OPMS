@@ -391,7 +391,7 @@ class ProductionController extends Controller
         return redirect()->route('admin.manageProduction')->with('success', 'Production resumed.');
     }
 
-    public function completeProduction(Request $request, $scheduleId)
+        public function completeProduction(Request $request, $scheduleId)
     {
         $validated = $request->validate([
             'completion_notes' => 'nullable|string',
@@ -399,30 +399,30 @@ class ProductionController extends Controller
         ]);
 
         $schedule = ProductionSchedule::with('item')->findOrFail($scheduleId);
-        
-        $schedule->update([
-            'schedule_status' => 'completed',
-            'defective_quantity' => $validated['defective_quantity'] ?? 0,
-            'completion_date' => now(),
-        ]);
 
-        // Calculate final good quantity
+        // Calculate good quantity
         $goodQuantity = $schedule->quantity - ($validated['defective_quantity'] ?? 0);
         if ($goodQuantity < 0) {
             return redirect()->back()->with('error', 'Defective quantity cannot exceed total quantity.');
         }
+
+        // Update schedule
         $schedule->update([
+            'schedule_status' => 'completed',
+            'defective_quantity' => $validated['defective_quantity'] ?? 0,
             'good_quantity' => $goodQuantity,
+            'completion_date' => now(),
         ]);
+
         // Create production log
         ProductionLog::create([
             'production_schedule_id' => $schedule->id,
             'action' => 'complete',
             'notes' => $validated['completion_notes'] ?? 'Production completed',
-            'user_id' => auth('admin')->user()?->id,
+            'user_id' => auth('admin')->id(),
         ]);
 
-        // Update OrderItemStageLog
+        // Create order stage log
         OrderItemStageLog::create([
             'tracking_id' => $schedule->item->tracking_id,
             'estimate_item_sku' => $schedule->item->sku,
@@ -436,18 +436,34 @@ class ProductionController extends Controller
             'timestamp' => now(),
         ]);
 
-        // Notify warehouse
-        WarehouseNotification::create([
-            'tracking_id' => $schedule->item->tracking_id,
-            'estimate_item_sku' => $schedule->item->sku,
-            'product_name' => $schedule->item->name ?? 'Unknown Product',
-            'quantity' => $goodQuantity,
-            'production_schedule_id' => $schedule->id,
-            'status' => 'pending',
-            'notes' => 'Production completed. Ready for warehouse assignment.',
-        ]);
+        // Check if good quantity is valid before notifying warehouse
+        if ($goodQuantity > 0) {
+            WarehouseNotification::create([
+                'tracking_id' => $schedule->item->tracking_id,
+                'estimate_item_sku' => $schedule->item->sku,
+                'product_name' => $schedule->item->name ?? $schedule->item->product_name ?? 'Unknown Product', // Ensure name is mapped correctly
+                'quantity' => $goodQuantity,
+                'production_schedule_id' => $schedule->id,
+                'status' => 'ready',
+                'notes' => 'Production completed. Ready for packaging.',
+            ]);
+        } else {
+            // Log in defects workflow for discard or rework suggestion
+            OrderItemStageLog::create([
+                'tracking_id' => $schedule->item->tracking_id,
+                'estimate_item_sku' => $schedule->item->sku,
+                'stage' => 'defect_review',
+                'comments' => 'Production completed with zero good quantity. Flagged for rework or discard.',
+                'meta' => [
+                    'completed_by' => auth('admin')->user()?->name ?? 'System',
+                    'defective_quantity' => $validated['defective_quantity'] ?? 0,
+                ],
+                'timestamp' => now(),
+            ]);
+        }
 
-        return redirect()->route('admin.manageProduction')->with('success', 'Production completed successfully. Warehouse has been notified.');
+        return redirect()->route('admin.manageProduction')->with('success', 'Production completed. ' . ($goodQuantity > 0 ? 'Warehouse notified.' : 'No good quantity. Flagged for defect management.'));
     }
+
 }
 

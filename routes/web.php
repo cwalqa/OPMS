@@ -11,7 +11,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ProductionController;
 use App\Http\Controllers\DeliveryController;
-use App\Http\Controllers\DefectController;
+use App\Http\Controllers\DefectsController;
 use App\Http\Controllers\ItemsController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BrandController;
@@ -21,6 +21,7 @@ use App\Http\Controllers\TransferController;
 
 
 use App\Http\Controllers\ProductionTrackingController;
+use App\Http\Controllers\PackagingController;
 
 
 
@@ -236,7 +237,6 @@ Route::prefix('admin', )->name('admin.')->middleware(['auth:admin'])->group(func
     Route::prefix('production')->group(function () {
         Route::get('/manage', [ProductionController::class, 'viewStartProduction'])->name('manageProduction');
     
-        Route::get('/start', [ProductionController::class, 'viewStartProduction'])->name('production.start');
     
         // Production control actions
         Route::post('/start/{id}', [ProductionController::class, 'startProduction'])->name('production.start.process');
@@ -255,20 +255,27 @@ Route::prefix('admin', )->name('admin.')->middleware(['auth:admin'])->group(func
         Route::get('/production/logs/{id}', [ProductionController::class, 'viewStageLogDetails'])->name('production.viewLogDetails');
         
         // Defect management
-        Route::get('/manageDefect', [DefectController::class, 'index'])->name('manageDefects');
-        Route::get('/reportDefect', [DefectController::class, 'create'])->name('reportDefect');
-        Route::post('/{id}/assess-severity', [ProductionController::class, 'assessSeverity'])->name('assessSeverity');
-        Route::post('/{defect_id}/track-status', [ProductionController::class, 'trackStatus'])->name('trackDefectStatus');
-        Route::get('/{item_id}/generate-report', [ProductionController::class, 'generateDefectReport'])->name('generateDefectReport');
-        Route::post('/tag-batch', [ProductionController::class, 'tagBatch'])->name('tagBatch');
-        Route::post('/{item_id}/capture-repair-history', [ProductionController::class, 'captureRepairHistory'])->name('captureRepairHistory');
-        Route::post('/{defect_id}/escalate', [ProductionController::class, 'escalateDefect'])->name('escalateDefect');
-
+    
 
 
         Route::post('/production/scan', [ProductionTrackingController::class, 'scanQr']);
         Route::post('/production/update-stage', [ProductionTrackingController::class, 'updateStage']);
     });
+
+    // Grouping under 'admin' if applicable
+// Inside your already existing admin group, just keep this block
+Route::prefix('defects')->name('defects.')->group(function () {
+    Route::get('/', [DefectsController::class, 'index'])->name('index');
+    Route::get('/create', [DefectsController::class, 'create'])->name('create');
+    Route::post('/', [DefectsController::class, 'store'])->name('store');
+    Route::get('/{id}', [DefectsController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [DefectsController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [DefectsController::class, 'update'])->name('update');
+    Route::post('/{id}/rework', [DefectsController::class, 'markForRework'])->name('rework');
+    Route::post('/{id}/discard', [DefectsController::class, 'markForDiscard'])->name('discard');
+    Route::get('/reports', [DefectsController::class, 'reports'])->name('reports');
+});
+
     
     // Delivery management
     Route::prefix('deliveries')->group(function () {
@@ -330,13 +337,6 @@ Route::middleware(['auth:admin'])->group(function () {
         Route::get('/download-qr/{log_id}', [ProductionController::class, 'downloadQrCode'])->name('downloadQr');
     });
     
-    // Defect routes
-    Route::prefix('defects')->name('defects.')->group(function () {
-        Route::post('/store', [DefectController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [DefectController::class, 'edit'])->name('edit');
-        Route::post('/{id}/update', [DefectController::class, 'update'])->name('update');
-        Route::post('/{id}/log-notes', [DefectController::class, 'logNotes'])->name('logNotes');
-    });
 });
 
 /*
@@ -360,4 +360,41 @@ Route::get('/qr-scanner', function () {
 
 Route::get('/test-email', function () {
     app(\App\Services\PHPMailerService::class)->send('walker@datapluzz.com', 'Test Email', 'This is a test email.');
+});
+
+
+
+Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(function () {
+    // Existing routes
+    Route::get('/packaging', [PackagingController::class, 'index'])->name('packaging.index');
+    Route::get('/packaging/pending', [PackagingController::class, 'showPendingItems'])->name('packaging.pending');
+    Route::post('/packaging/create', [PackagingController::class, 'createTask'])->name('packaging.create');
+    Route::post('/packaging/{id}/assign', [PackagingController::class, 'assignTask'])->name('packaging.assign');
+    Route::post('/packaging/{id}/status', [PackagingController::class, 'updateStatus'])->name('packaging.update-status');
+    Route::get('/packaging/{id}/label', [PackagingController::class, 'generateLabel'])->name('packaging.label');
+    Route::get('/packaging/{id}/label/download', [PackagingController::class, 'downloadLabel'])->name('packaging.label.download');
+    Route::get('/packaging/{id}', [PackagingController::class, 'show'])->name('packaging.show');
+    Route::get('/packaging/bulk', [PackagingController::class, 'bulkPackaging'])->name('packaging.bulk');
+    Route::post('/packaging/bulk', [PackagingController::class, 'processBulkPackaging'])->name('packaging.bulk.process');
+    Route::get('/packaging/reports', [PackagingController::class, 'reports'])->name('packaging.reports');
+    
+    // New routes for missing functionality
+    Route::get('/packaging/materials', [PackagingController::class, 'customMaterials'])->name('packaging.materials');
+    Route::post('/packaging/materials', [PackagingController::class, 'addCustomMaterial'])->name('packaging.materials.add');
+    Route::post('/packaging/{id}/materials', [PackagingController::class, 'assignMaterialsToTask'])->name('packaging.materials.assign');
+    Route::get('/packaging/inventory', [PackagingController::class, 'checkInventoryLevels'])->name('packaging.inventory');
+    Route::post('/packaging/{id}/quality', [PackagingController::class, 'qualityControl'])->name('packaging.quality');
+    Route::post('/packaging/{id}/shipping', [PackagingController::class, 'prepareForShipping'])->name('packaging.shipping');
+});
+
+// Staff routes for packaging tasks
+Route::middleware(['auth'])->prefix('packaging')->name('packaging.')->group(function () {
+    Route::get('/dashboard', [PackagingController::class, 'staffDashboard'])->name('staff-dashboard');
+    Route::post('/task/{id}/progress', [PackagingController::class, 'updateTaskProgress'])->name('task.progress');
+});
+
+// API routes for mobile app
+Route::middleware(['auth:api'])->prefix('api/packaging')->name('api.packaging.')->group(function () {
+    Route::get('/tasks', [PackagingController::class, 'apiGetAssignedTasks'])->name('tasks');
+    Route::post('/task/{id}/status', [PackagingController::class, 'apiUpdateTaskStatus'])->name('task.status');
 });

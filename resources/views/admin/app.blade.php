@@ -42,6 +42,8 @@
 
     </style>
 
+
+@stack('styles')
 </head>
 
 <body class="g-sidenav-show  bg-gray-200">
@@ -215,23 +217,64 @@
                   <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                     <i class="material-icons opacity-10">qr_code_scanner</i>
                   </div>
-                  <span class="nav-link-text ms-1">Start Production</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link text-white {{ Route::is('admin.manageProduction') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.manageProduction') }}">
-                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-                    <i class="material-icons opacity-10">qr_code_scanner</i>
-                  </div>
                   <span class="nav-link-text ms-1">Manage Production</span>
                 </a>
               </li>
+            </ul>
+          </div>
+        </li>
+
+
+        <li class="nav-item">
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#defectsMenu" 
+            data-bs-toggle="collapse" aria-expanded="false">
+              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                  <i class="material-icons opacity-10">warning</i>
+              </div>
+              <span class="nav-link-text ms-1">Defects Management</span>
+              <!-- <i class="material-icons ms-auto dropdown-icon">&#xE313;</i> -->
+          </a>
+          <!-- Dropdown Menu -->
+          <div class="collapse" id="defectsMenu">
+            <ul class="nav flex-column ps-3">
               <li class="nav-item">
-                <a class="nav-link text-white {{ Route::is('admin.manageDefects') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.manageDefects') }}">
+                <a class="nav-link text-white {{ Route::is('admin.defects.index') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.defects.index') }}">
                   <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                     <i class="material-icons opacity-10">warning</i>
                   </div>
-                  <span class="nav-link-text ms-1">Report Defects</span>
+                  <span class="nav-link-text ms-1">Manage Defects</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.defects.reports') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.defects.reports') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">warning</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Reports</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#packagingMenu" 
+            data-bs-toggle="collapse" aria-expanded="false">
+              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                  <i class="material-icons opacity-10">local_shipping</i>
+              </div>
+              <span class="nav-link-text ms-1">Packaging</span>
+              <!-- <i class="material-icons ms-auto dropdown-icon">&#xE313;</i> -->
+          </a>
+          <!-- Dropdown Menu -->
+          <div class="collapse" id="packagingMenu">
+            <ul class="nav flex-column ps-3">
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.packaging.index') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.packaging.index') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">local_shipping</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Packaging</span>
                 </a>
               </li>
             </ul>

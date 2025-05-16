@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ProductionDefect;
 
 class ProductionSchedule extends Model
 {
@@ -36,5 +37,10 @@ class ProductionSchedule extends Model
     public function logs()
     {
         return $this->hasMany(ProductionLog::class, 'production_schedule_id');
+    }
+
+    public function defects()
+    {
+        return $this->hasMany(ProductionDefect::class, 'production_schedule_id', 'id');
     }
 }

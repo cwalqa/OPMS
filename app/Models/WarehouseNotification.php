@@ -40,4 +40,29 @@ class WarehouseNotification extends Model
     {
         return $this->belongsTo(QuickbooksAdmin::class, 'assigned_by');
     }
+
+    public function getItemAttribute()
+    {
+        return $this->schedule?->item;
+    }
+
+        public function getItemSkuAttribute()
+    {
+        return $this->schedule?->item_sku;
+    }
+
+        public function getItemNameAttribute()
+    {
+        return $this->schedule?->item_name;
+    }
+
+        public function getItemQuantityAttribute()
+    {
+        return $this->schedule?->quantity;
+    }
+
+        public function getItemStatusAttribute()
+    {
+        return $this->schedule?->status;
+    }
 }

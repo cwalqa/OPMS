@@ -8,18 +8,15 @@
                 <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
                     <div class="bg-gradient-danger shadow-danger border-radius-lg pt-4 pb-3 d-flex justify-content-between">
                         <h6 class="text-white text-capitalize ps-3">Manage Production Defects</h6>
-                        <!-- Button to trigger defect reporting -->
-                        <a href="{{ route('admin.reportDefect') }}" class="btn btn-light btn-sm me-3">
+                        <a href="{{ route('admin.defects.create') }}" class="btn btn-light btn-sm me-3">
                             Report New Defect
                         </a>
                     </div>
                 </div>
                 <div class="card-body px-0 pb-2">
                     <div class="table-responsive p-3">
-                        <!-- Input for table search functionality -->
                         <input type="text" id="defectSearchInput" placeholder="Search Defect Logs..." class="form-control mb-3">
                         
-                        <!-- Defects management table -->
                         <table class="table align-items-center mb-0" id="defectTable">
                             <thead>
                                 <tr>
@@ -34,41 +31,97 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($defectLogs as $log)
+                                @foreach($defects as $log)
                                     <tr>
-                                        <td>{{ $log->item->description }}</td>
+                                        <td>{{ $log->estimateItem->name ?? '-' }}</td>
                                         <td>{{ $log->description }}</td>
                                         <td>{{ $log->quantity }}</td>
                                         <td>{{ ucfirst($log->defect_type) }}</td>
                                         <td>{{ ucfirst($log->severity) }}</td>
                                         <td>{{ ucfirst($log->status) }}</td>
-                                        <td>{{ $log->created_at }}</td>
+                                        <td>{{ $log->created_at->format('d M Y') }}</td>
                                         <td>
-                                            <!-- Action Buttons -->
-                                            <a href="{{ route('defects.edit', ['id' => $log->id]) }}" class="btn btn-primary btn-sm">Edit</a>
-                                            <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#logNotesModal{{ $log->id }}">Add Notes</button>
+                                            <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#viewModal{{ $log->id }}">View</button>
+                                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ $log->id }}">Edit</button>
+                                            <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#reworkModal{{ $log->id }}">Rework</button>
+                                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#discardModal{{ $log->id }}">Discard</button>
                                         </td>
                                     </tr>
 
-                                    <!-- Notes Modal -->
-                                    <div class="modal fade" id="logNotesModal{{ $log->id }}" tabindex="-1" aria-labelledby="logNotesModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog">
+                                    <!-- View Modal -->
+                                    <div class="modal fade" id="viewModal{{ $log->id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
                                             <div class="modal-content">
                                                 <div class="modal-header">
-                                                    <h5 class="modal-title" id="logNotesModalLabel">Add Notes</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    <h5 class="modal-title">Defect Details</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <div class="modal-body">
-                                                    <form action="{{ route('defects.logNotes') }}" method="POST">
-                                                        @csrf
-                                                        <input type="hidden" name="defect_id" value="{{ $log->id }}">
-                                                        <div class="form-group">
-                                                            <label for="notes">Notes</label>
-                                                            <textarea name="notes" class="form-control">{{ $log->notes }}</textarea>
-                                                        </div>
-                                                        <button type="submit" class="btn btn-primary mt-3">Save Notes</button>
-                                                    </form>
+                                                    @include('admin.defects.partials.view', ['defect' => $log])
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Edit Modal -->
+                                    <div class="modal fade" id="editModal{{ $log->id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Edit Defect</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    @include('admin.defects.partials.edit', ['defect' => $log, 'defectTypes' => $defectTypes, 'severityLevels' => $severityLevels, 'statuses' => $statuses])
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Rework Modal -->
+                                    <div class="modal fade" id="reworkModal{{ $log->id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form method="POST" action="{{ route('admin.defects.rework', $log->id) }}">
+                                                    @csrf
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Mark for Rework</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label>Corrective Action</label>
+                                                            <textarea name="corrective_action" class="form-control" required></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="submit" class="btn btn-warning">Confirm</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Discard Modal -->
+                                    <div class="modal fade" id="discardModal{{ $log->id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form method="POST" action="{{ route('admin.defects.discard', $log->id) }}">
+                                                    @csrf
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Mark for Discard</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label>Reason for Discard</label>
+                                                            <textarea name="discard_reason" class="form-control" required></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="submit" class="btn btn-danger">Confirm</button>
+                                                    </div>
+                                                </form>
                                             </div>
                                         </div>
                                     </div>
@@ -76,9 +129,8 @@
                             </tbody>
                         </table>
 
-                        <!-- Pagination -->
                         <div class="mt-3">
-                            {{ $defectLogs->links() }}
+                            {{ $defects->links() }}
                         </div>
                     </div>
                 </div>
@@ -86,14 +138,11 @@
         </div>
     </div>
 </div>
-
 @endsection
 
 @section('scripts')
-<script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Search functionality for defect logs
         const defectSearchInput = document.getElementById('defectSearchInput');
         defectSearchInput.addEventListener('input', function () {
             const filter = defectSearchInput.value.toLowerCase();

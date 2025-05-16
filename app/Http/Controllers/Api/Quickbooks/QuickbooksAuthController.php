@@ -51,17 +51,42 @@ class QuickbooksAuthController extends Controller
     public function callback(Request $request)
     {
         try {
+            if (!$request->has('code') || !$request->has('realmId')) {
+                Log::error('QuickBooks callback missing required parameters: ' . json_encode($request->all()));
+                return redirect('/')->with('error', 'Authorization failed: Missing required parameters.');
+            }
+
             $dataService = DataService::Configure([
                 'auth_mode'    => 'oauth2',
                 'ClientID'     => config('quickbooks.client_id'),
                 'ClientSecret' => config('quickbooks.client_secret'),
                 'RedirectURI'  => config('quickbooks.redirect_uri'),
-                'scope'        => 'com.intuit.quickbooks.accounting openid profile email phone address',
+                'scope'        => config('quickbooks.scope', 'com.intuit.quickbooks.accounting openid profile email phone address'),
                 'baseUrl'      => config('quickbooks.environment', 'Development'),
             ]);
 
             $OAuth2LoginHelper = $dataService->getOAuth2LoginHelper();
             $accessToken = $OAuth2LoginHelper->exchangeAuthorizationCodeForToken($request->get('code'), $request->get('realmId'));
+
+            // Make sure we got a valid token
+            if (!$accessToken) {
+                throw new \Exception('Failed to obtain access token from QuickBooks.');
+            }
+            
+            // Get token expiration - handle different SDK versions
+            $accessTokenExpiresAt = Carbon::now()->addHour(); // Default fallback is 1 hour
+            
+            if (method_exists($accessToken, 'getAccessTokenExpiresAt')) {
+                $accessTokenExpiresAt = Carbon::parse($accessToken->getAccessTokenExpiresAt());
+            } elseif (method_exists($accessToken, 'getExpiresAt')) {
+                $accessTokenExpiresAt = Carbon::parse($accessToken->getExpiresAt());
+            } elseif (method_exists($accessToken, 'getExpiresIn')) {
+                $accessTokenExpiresAt = Carbon::now()->addSeconds($accessToken->getExpiresIn());
+            } elseif (method_exists($accessToken, 'getAccessTokenExpiresIn')) {
+                $accessTokenExpiresAt = Carbon::now()->addSeconds($accessToken->getAccessTokenExpiresIn());
+            } elseif (property_exists($accessToken, 'expires_in')) {
+                $accessTokenExpiresAt = Carbon::now()->addSeconds($accessToken->expires_in);
+            }
 
             // Save tokens to the database with expiration timestamps
             QuickBooksToken::updateOrCreate(
@@ -69,7 +94,7 @@ class QuickbooksAuthController extends Controller
                 [
                     'access_token' => $accessToken->getAccessToken(),
                     'refresh_token' => $accessToken->getRefreshToken(),
-                    'access_token_expires_at' => Carbon::now()->addSeconds($accessToken->getAccessTokenExpiresIn()),
+                    'access_token_expires_at' => $accessTokenExpiresAt,
                     'refresh_token_expires_at' => Carbon::now()->addDays(100), // QuickBooks refresh tokens expire after ~100 days
                     'last_used_at' => Carbon::now(),
                     'needs_reauth' => false,
