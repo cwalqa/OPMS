@@ -21,48 +21,56 @@ class SyncEstimates extends Command
 
     public function handle()
     {
-        $token_data = QuickBooksToken::where('id', "1")->first();
+        try {
+            $token_data = QuickBooksToken::where('id', "1")->first();
 
-        if($token_data->count()>0)
-        {
-            // Initialize QuickBooks Data Service
-            $this->dataService = DataService::Configure(array(
-                'auth_mode'       => 'oauth2',
-                'ClientID'        => config('quickbooks.client_id'),
-                'ClientSecret'    => config('quickbooks.client_secret'),
-                'RedirectURI'     => config('quickbooks.redirect_uri'),
-                'baseUrl'         => config('quickbooks.environment','Development'),
-                'accessTokenKey'  => $token_data->access_token,
-                'refreshTokenKey' => $token_data->refresh_token,
-                'QBORealmID'      => $token_data->realm_id,
-            ));
+            if($token_data->count()>0)
+            {
+                // Initialize QuickBooks Data Service
+                $this->dataService = DataService::Configure(array(
+                    'auth_mode'       => 'oauth2',
+                    'ClientID'        => config('quickbooks.client_id'),
+                    'ClientSecret'    => config('quickbooks.client_secret'),
+                    'RedirectURI'     => config('quickbooks.redirect_uri'),
+                    'baseUrl'         => config('quickbooks.environment','Development'),
+                    'accessTokenKey'  => $token_data->access_token,
+                    'refreshTokenKey' => $token_data->refresh_token,
+                    'QBORealmID'      => $token_data->realm_id,
+                ));
 
-            $this->dataService->setLogLocation(storage_path('logs/qbo.log'));
-            $this->dataService->throwExceptionOnError(true);
-           
-            // Get all estimates that need to be synced with QuickBooks
-            $estimates = QuickbooksEstimates::whereNull('qb_estimate_id')->orWhere('is_updated','1')->with('items')->get();
-            
-            foreach ($estimates as $estimate) {
-
-                $estimate->customer_ref = $this->findOrCreateCustomer($estimate);
+                $this->dataService->setLogLocation(storage_path('logs/qbo.log'));
+                $this->dataService->throwExceptionOnError(true);
+               
+                // Get all estimates that need to be synced with QuickBooks
+                $estimates = QuickbooksEstimates::whereNull('qb_estimate_id')->orWhere('is_updated','1')->with('items')->get();
                 
-                if ($estimate->qb_estimate_id) {
-                // Update existing estimate in QuickBooks
-                    $qboEstimate = $this->updateEstimateInQBO($estimate);
-                    $estimate->is_updated='0';
-                } else {
+                foreach ($estimates as $estimate) {
+                    try {
+                        $estimate->customer_ref = $this->findOrCreateCustomer($estimate);
+                        
+                        if ($estimate->qb_estimate_id) {
+                        // Update existing estimate in QuickBooks
+                            $qboEstimate = $this->updateEstimateInQBO($estimate);
+                            $estimate->is_updated='0';
+                        } else {
 
-                // Create new estimate in QuickBooks
-                    $qboEstimate = $this->createEstimateInQBO($estimate); 
-                }
+                        // Create new estimate in QuickBooks
+                            $qboEstimate = $this->createEstimateInQBO($estimate); 
+                        }
 
-                if ($qboEstimate) {
-                    $estimate->qb_estimate_id = $qboEstimate->Id;
-                    $estimate->synced_at = now();
-                    $estimate->save();
+                        if ($qboEstimate) {
+                            $estimate->qb_estimate_id = $qboEstimate->Id;
+                            $estimate->synced_at = now();
+                            $estimate->save();
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error("Error processing estimate ID: " . $estimate->id . " - " . $e->getMessage());
+                    }
                 }
             }
+        } catch (\Exception $e) {
+            \Log::error("Error in sync-estimates command: " . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -153,32 +161,59 @@ class SyncEstimates extends Command
 
     public function findOrCreateCustomer($customerData)
     {
-        // 1. Attempt to Find Existing Customer
-        $name = $customerData['customer_name'];
-        $existingCustomer = $this->findCustomerByName($name);
-    
-        if ($existingCustomer) {
-            return $existingCustomer->Id; 
-        }
-    
-        // 2. Create New Customer (If Not Found)
-        $customer = Customer::create(['DisplayName'=>$name]);
-        $resultingObj = $this->dataService->Add($customer);
+        try {
+            // 1. Attempt to Find Existing Customer
+            $name = $customerData['customer_name'];
+            $existingCustomer = $this->findCustomerByName($name);
+        
+            if ($existingCustomer) {
+                return $existingCustomer->Id; 
+            }
+        
+            // 2. Create New Customer (If Not Found)
+            $customer = Customer::create(['DisplayName'=>$name]);
+            $resultingObj = $this->dataService->Add($customer);
 
-        if ($resultingObj) {
-            return $resultingObj->Id;
-        } else {
-            self::error("Failed to create customer in QuickBooks.");
+            if ($resultingObj) {
+                return $resultingObj->Id;
+            } else {
+                $error = $this->dataService->getLastError();
+                \Log::error("Failed to create customer in QuickBooks: " . 
+                    ($error ? $error->getResponseBody() : "Unknown error"));
+                throw new \Exception("Failed to create customer in QuickBooks.");
+            }
+        } catch (\Exception $e) {
+            \Log::error("Error in findOrCreateCustomer: " . $e->getMessage());
+            throw $e;
         }
     }
 
     private function findCustomerByName($name)
     {
-        $query = "SELECT Id FROM Customer WHERE DisplayName = '$name'";
-        
-        $customers = $this->dataService->Query($query);
-        
-        return !empty($customers) ? $customers[0] : null;
+        try {
+            // Avoid using query syntax since it's causing issues
+            // Instead, use FindAll and filter in PHP
+            $allCustomers = $this->dataService->FindAll('Customer');
+            
+            if (!$allCustomers) {
+                \Log::error("Failed to retrieve customers from QuickBooks");
+                return null;
+            }
+            
+            foreach ($allCustomers as $customer) {
+                if (property_exists($customer, 'DisplayName') && $customer->DisplayName == $name) {
+                    return $customer;
+                }
+            }
+            
+            // No matching customer found
+            \Log::info("No customer found with name: " . $name);
+            return null;
+            
+        } catch (\Exception $e) {
+            \Log::error("Error in findCustomerByName: " . $e->getMessage());
+            return null;
+        }
     }
 
     public function findOrItem($itemData)
@@ -204,39 +239,36 @@ class SyncEstimates extends Command
     private function findItemBySku($sku)
     {
         try {
-            // Try direct FindById method first - works on older QB API versions (local environment)
-            $item = $this->dataService->FindById('Item', $sku);
-            if ($item) {
-                return $item;
-            }
-        } catch (\Exception $e) {
-            // If direct ID lookup fails, continue to query method
-            \Log::info("Direct FindById failed, trying query: " . $e->getMessage());
-        }
-        
-        try {
-            // Try finding by Sku field - works on newer QB API versions (cPanel)
-            $query = "SELECT Id FROM Item WHERE Sku = '$sku'";
-            $items = $this->dataService->Query($query);
-            if (!empty($items)) {
-                return $items[0];
+            // Completely avoid using Query for now
+            // The error is definitely in the Query syntax, so let's bypass it
+            
+            // Instead, get all items and filter manually
+            $allItemsResponse = $this->dataService->FindAll('Item');
+            
+            if (!$allItemsResponse) {
+                \Log::error("Failed to retrieve items from QuickBooks");
+                return null;
             }
             
-            // If Sku doesn't work, try by Name as fallback
-            $query = "SELECT Id FROM Item WHERE Name = '$sku'";
-            $items = $this->dataService->Query($query);
-            if (!empty($items)) {
-                return $items[0];
+            // Look through all items for a matching SKU or ID
+            foreach ($allItemsResponse as $item) {
+                // Check if this item matches our SKU (try various property names)
+                if (
+                    (property_exists($item, 'Id') && $item->Id == $sku) ||
+                    (property_exists($item, 'Sku') && $item->Sku == $sku) ||
+                    (property_exists($item, 'Name') && $item->Name == $sku) ||
+                    (property_exists($item, 'Number') && $item->Number == $sku)
+                ) {
+                    return $item;
+                }
             }
             
-            // Last resort - try finding by Number
-            $query = "SELECT Id FROM Item WHERE Number = '$sku'";
-            $items = $this->dataService->Query($query);
-            return !empty($items) ? $items[0] : null;
+            // No matching item found
+            \Log::warning("No item found with SKU: " . $sku);
+            return null;
             
         } catch (\Exception $e) {
-            \Log::error("QuickBooks query error: " . $e->getMessage());
-            \Log::error("Query attempted with SKU: " . $sku);
+            \Log::error("Error in findItemBySku: " . $e->getMessage());
             return null;
         }
     }
