@@ -77,6 +77,14 @@
             <span class="nav-link-text ms-1">Canceled Orders</span>
           </a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link text-white {{ Route::is('client.declinedOrderHistory') ? 'active bg-gradient-primary' : '' }} " href="{{ route('client.declinedOrderHistory') }}">
+            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="material-icons opacity-10">remove_circle</i>
+            </div>
+            <span class="nav-link-text ms-1">Declined Orders</span>
+          </a>
+        </li>
 
         <li class="nav-item mt-3">
           <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">SYSTEM MANAGEMENT</h6>
