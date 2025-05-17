@@ -195,15 +195,49 @@ class SyncEstimates extends Command
         }
         else 
         {
+            // Log which item is missing
+            \Log::warning("Item not found in QuickBooks: " . ($itemData->sku ?? 'Unknown SKU'));
             return false;
         }
     }
 
     private function findItemBySku($sku)
     {
-        $query = "SELECT Id FROM Item WHERE Id = '$sku'";
-        $items = $this->dataService->Query($query);
+        try {
+            // Try direct FindById method first - works on older QB API versions (local environment)
+            $item = $this->dataService->FindById('Item', $sku);
+            if ($item) {
+                return $item;
+            }
+        } catch (\Exception $e) {
+            // If direct ID lookup fails, continue to query method
+            \Log::info("Direct FindById failed, trying query: " . $e->getMessage());
+        }
         
-        return !empty($items) ? $items[0] : null;
+        try {
+            // Try finding by Sku field - works on newer QB API versions (cPanel)
+            $query = "SELECT Id FROM Item WHERE Sku = '$sku'";
+            $items = $this->dataService->Query($query);
+            if (!empty($items)) {
+                return $items[0];
+            }
+            
+            // If Sku doesn't work, try by Name as fallback
+            $query = "SELECT Id FROM Item WHERE Name = '$sku'";
+            $items = $this->dataService->Query($query);
+            if (!empty($items)) {
+                return $items[0];
+            }
+            
+            // Last resort - try finding by Number
+            $query = "SELECT Id FROM Item WHERE Number = '$sku'";
+            $items = $this->dataService->Query($query);
+            return !empty($items) ? $items[0] : null;
+            
+        } catch (\Exception $e) {
+            \Log::error("QuickBooks query error: " . $e->getMessage());
+            \Log::error("Query attempted with SKU: " . $sku);
+            return null;
+        }
     }
 }
