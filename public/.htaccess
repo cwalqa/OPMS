@@ -69,7 +69,7 @@
     Header always set Permissions-Policy "geolocation=self, microphone=(), camera=(), payment=self, usb=(), fullscreen=self"
     
     # Content Security Policy - Adjust as needed for your application
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.quickbooks.com https://cdnjs.cloudflare.com; connect-src 'self' https://api.quickbooks.intuit.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' data: https://cdnjs.cloudflare.com; frame-src 'self'; object-src 'none';"
+    # Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.quickbooks.com https://cdnjs.cloudflare.com; connect-src 'self' https://api.quickbooks.intuit.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' data: https://cdnjs.cloudflare.com; frame-src 'self'; object-src 'none';"
     
     # HTTP Strict Transport Security (HSTS)
     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
