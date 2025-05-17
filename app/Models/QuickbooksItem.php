@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Quickbooksitem extends Model
+class QuickbooksItem extends Model
 {
     use HasFactory;
     protected $table = 'quickbooks_item';
