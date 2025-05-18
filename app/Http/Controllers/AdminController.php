@@ -25,6 +25,10 @@ use Illuminate\Support\Facades\Log;
 
 use App\Models\OrderItemStageLog;
 
+use App\Models\MaterialCheckin; 
+
+use Carbon\Carbon;
+
 
 class AdminController extends Controller
 {
@@ -577,5 +581,99 @@ class AdminController extends Controller
     return redirect()->route('admin.customers')->with('success', 'Customer updated successfully.');
 }
 
+
+public function dashboard()
+    {
+        // Total Orders Stats
+        $totalOrders = QuickbooksEstimates::count();
+        $approvedOrders = QuickbooksEstimates::where('status', 'approved')->count();
+        $pendingOrders = QuickbooksEstimates::where('status', 'pending')->count();
+        $canceledOrders = QuickbooksEstimates::where('status', 'canceled')->count();
+        $declinedOrders = QuickbooksEstimates::where('status', 'declined')->count();
+
+        // Inventory Health
+        // $stockIn = InventoryItem::where('quantity', '>', 10)->count();
+        // $stockLow = InventoryItem::whereBetween('quantity', [1, 10])->count();
+        // $stockOut = InventoryItem::where('quantity', 0)->count();
+
+        // Materials Checked In Today
+        // $materialsToday = MaterialCheckin::whereDate('checked_in_at', Carbon::today())->count();
+
+        // Packaging Status
+        // $packagedCount = QuickbooksEstimateItems::where('packaging_status', 'completed')->count();
+        // $awaitingPackaging = QuickbooksEstimateItems::where('packaging_status', 'pending')->count();
+
+        // Monthly Order Trends
+        $orderTrends = QuickbooksEstimates::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as total")
+            ->groupBy('month')
+            ->orderBy('month', 'desc')
+            ->limit(6)
+            ->get();
+
+        $orderTrendLabels = $orderTrends->pluck('month');
+        $orderTrendData = $orderTrends->pluck('total');
+
+        // Top Clients
+        $topClients = QuickbooksEstimates::select('customer_ref', \DB::raw('SUM(total_amount) as total_spent'))
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->whereIn('status', ['approved', 'completed']) // ✅ only approved/completed
+            ->groupBy('customer_ref')
+            ->orderByDesc('total_spent')
+            ->take(5)
+            ->get()
+            ->map(function ($order) {
+                $customer = QuickbooksCustomer::where('customer_id', $order->customer_ref)->first();
+
+                // Calculate gross spend only from approved or completed orders
+                $grossSpend = \App\Models\QuickbooksEstimates::where('customer_ref', $order->customer_ref)
+                    ->whereIn('status', ['approved', 'completed'])
+                    ->sum('total_amount');
+
+                return (object) [
+                    'name' => $customer->company_name ?? 'Unknown',
+                    'total_spent' => $order->total_spent,
+                    'gross_spent' => $grossSpend,
+                ];
+            });
+
+            $topOrderedItemsRaw = \DB::table('quickbooks_estimate_items')
+                ->select('sku', \DB::raw('SUM(quantity) as total_quantity'))
+                ->groupBy('sku')
+                ->orderByDesc('total_quantity')
+                ->limit(5)
+                ->get();
+
+            $totalOrderedQuantity = \DB::table('quickbooks_estimate_items')->sum('quantity');
+
+            $topOrderedItems = $topOrderedItemsRaw->map(function ($item) {
+                $details = \App\Models\QuickbooksItem::where('item_id', $item->sku)->first();
+                return (object) [
+                    'sku' => $item->sku,
+                    'name' => $details->name ?? 'Unknown',
+                    'total_quantity' => $item->total_quantity,
+                ];
+            });
+
+            $orderTrends = QuickbooksEstimates::selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month, COUNT(*) as total")
+                ->groupBy('month')
+                ->orderBy('month', 'asc')
+                ->limit(6)
+                ->get();
+
+            $orderTrendLabels = $orderTrends->pluck('month');
+            $orderTrendData = $orderTrends->pluck('total');
+
+
+
+
+        return view('admin.dashboard', compact(
+            'totalOrders', 'approvedOrders', 'pendingOrders', 'declinedOrders', 'canceledOrders',
+            'orderTrendLabels', 'orderTrendData', 'topClients',
+            'topOrderedItems', 'totalOrderedQuantity'
+        ));
+
+      
+    }
 
 }

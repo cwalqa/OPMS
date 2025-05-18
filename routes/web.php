@@ -174,9 +174,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 */
 Route::prefix('admin', )->name('admin.')->middleware(['auth:admin'])->group(function () {
     // Dashboard
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     
     // User management
     Route::prefix('users')->group(function () {
