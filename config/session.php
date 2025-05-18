@@ -4,7 +4,7 @@ use Illuminate\Support\Str;
 
 return [
     'driver' => env('SESSION_DRIVER', 'file'),
-    'lifetime' => 15,
+    'lifetime' => 120,
     'expire_on_close' => true,
     'encrypt' => false,
     'files' => storage_path('framework/sessions'),

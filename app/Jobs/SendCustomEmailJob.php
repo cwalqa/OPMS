@@ -16,15 +16,15 @@ class SendCustomEmailJob implements ShouldQueue
     protected $to;
     protected $subject;
     protected $body;
-    
-    // Add this property to make job synchronous
-    public $connection = 'sync';
 
     public function __construct($to, $subject, $body)
     {
         $this->to = $to;
         $this->subject = $subject;
         $this->body = $body;
+
+        // Correct Laravel way to set connection without PSR conflict
+        $this->onConnection('sync');
     }
 
     public function handle()

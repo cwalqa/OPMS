@@ -14,19 +14,30 @@ class SessionExpiredMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle($request, Closure $next)
-    {
-        if (!Auth::check()) {
-            // Check if the session is expired
-            if ($request->expectsJson()) {
-                // If it's an AJAX request, return a JSON response
-                return response()->json(['session_expired' => true], 401);
-            } else {
-                // Otherwise, redirect to the login page
-                return redirect()->route('login');
-            }
-        }
+    public function handle(Request $request, Closure $next)
+{
+    $excluded = [
+        '/', 'login', 'logout',
+        'admin-login', 'admin/login', 'admin/logout',
+        'password/reset', 'password/email', 'password/reset/*',
+        'quickbooks/*',
+        '2fa', '2fa/resend',
+        'admin/2fa', 'admin/2fa/resend',
+    ];
 
-        return $next($request);
+    foreach ($excluded as $pattern) {
+        if ($request->is($pattern)) {
+            return $next($request);
+        }
     }
+
+    if (!Auth::check()) {
+        return $request->expectsJson()
+            ? response()->json(['session_expired' => true], 401)
+            : redirect()->route('login');
+    }
+
+    return $next($request);
+}
+
 }

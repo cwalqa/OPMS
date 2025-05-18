@@ -117,14 +117,14 @@
         <li class="nav-item mt-3">
           <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">SUPPORT</h6>
         </li>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <a class="nav-link text-white " href="tel:+16147870056">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">tty</i>
             </div>
             <span class="nav-link-text ms-1">Call Help Desk</span>
           </a>
-        </li>
+        </li> -->
         <li class="nav-item">
           <a class="nav-link text-white " href="mailto:info@datapluzz.com">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
@@ -149,28 +149,56 @@
   </aside>
   <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
     <!-- Navbar -->
-    <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl" id="navbarBlur" data-scroll="true">
-      <div class="container-fluid py-1 px-3">
-        <nav aria-label="breadcrumb">
-          <h6 class="font-weight-bolder mb-0">Dashboard</h6>
-        </nav>
-        <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
-          <div class="ms-md-auto pe-md-3 d-flex align-items-center">
-            <div class="input-group input-group-outline">
-             
-            </div>
-          </div>
-          <ul class="navbar-nav  justify-content-end">
-            <li class="nav-item d-flex align-items-center">
-              <a href="#" class="nav-link text-body font-weight-bold px-0">
-                <i class="fa fa-user me-sm-1"></i>
-                <span class="d-sm-inline d-none">Welcome Back, {{ Auth::user()->company_name }}</span>
-              </a>
-            </li>
-          </ul>
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm rounded-bottom mb-4">
+    <div class="container-fluid px-3">
+        <h6 class="navbar-brand mb-0 fw-bold">Dashboard</h6>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="navbar-nav">
+                <li class="nav-item d-flex align-items-center">
+                    <a href="#" class="nav-link text-dark fw-semibold" data-bs-toggle="modal" data-bs-target="#companyProfileModal">
+                        <i class="fa fa-user-circle me-2"></i>
+                        Welcome Back, {{ Auth::user()->company_name }}
+                    </a>
+                </li>
+            </ul>
         </div>
-      </div>
-    </nav>
+    </div>
+</nav>
+
+<!-- Company Profile Modal -->
+<div class="modal fade" id="companyProfileModal" tabindex="-1" aria-labelledby="companyProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title" id="companyProfileModalLabel">
+                    <i class="fas fa-building me-2"></i> Company Profile
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <strong>Company Name:</strong> {{ Auth::user()->company_name }}
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Email:</strong> {{ Auth::user()->email }}
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Contact Person:</strong> {{ Auth::user()->contact_person ?? 'N/A' }}
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Joined:</strong> {{ Auth::user()->created_at?->format('M d, Y') ?? 'N/A' }}
+                    </li>
+                </ul>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <small class="text-muted">Data synced with your company profile</small>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
     <!-- End Navbar -->
     <div class="container-fluid py-4">
       <div class="row">
@@ -206,7 +234,10 @@
         @php
             $client = Auth::user();
 
-            $pendingOrders = \App\Models\QuickbooksEstimates::where('status', 'pending')
+            $pendingOrders = \App\Models\QuickbooksEstimates::where(function($query) {
+            $query->where('status', 'pending')
+                  ->orWhere('status', 'PENDING');
+                })
                 ->where('customer_ref', $client->customer_id)
                 ->get();
 
@@ -233,7 +264,13 @@
         </div>
 
         @php
-            $cancelledOrders = \App\Models\QuickbooksEstimates::where('status', 'cancelled')
+            $client = Auth::user();
+
+            // Check for both spellings of "cancelled"/"canceled"
+            $cancelledOrders = \App\Models\QuickbooksEstimates::where(function($query) {
+                    $query->where('status', 'cancelled')
+                          ->orWhere('status', 'canceled');
+                })
                 ->where('customer_ref', $client->customer_id)
                 ->get();
 
@@ -289,71 +326,67 @@
 
       <div class="row mb-4 mt-5">
         @php
+            $totalOrdersCount = \App\Models\QuickbooksEstimates::where('customer_ref', $client->customer_id)->count();
             $recentOrders = \App\Models\QuickbooksEstimates::where('customer_ref', $client->customer_id)
                 ->orderBy('created_at', 'desc')
                 ->take(5)
                 ->get();
         @endphp
 
-    <div class="col-lg-12 col-md-6 mb-md-0 mb-4">
-        <div class="card">
-            <div class="card-header pb-0">
-                <h6>Your Recent Orders</h6>
-                <p class="text-sm mb-0">
-                    <i class="fa fa-clock text-info" aria-hidden="true"></i>
-                    Showing last 5 orders
-                </p>
-            </div>
-            <div class="card-body px-0 pb-2">
-                <div class="table-responsive">
-                    <table class="table align-items-center mb-0">
-                        <thead>
-                            <tr>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">PO Number</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Total Amount</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Order Date</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($recentOrders as $order)
+        <div class="col-lg-12 col-md-6 mb-md-0 mb-4">
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center rounded-top-4 p-3">
+                    <h6 class="mb-0">
+                        <i class="fas fa-clock me-2"></i> Recent Orders - (Total Orders: {{ $totalOrdersCount }})
+                    </h6>
+                </div>
+                <div class="card-body px-0 pb-2">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-dark text-white">
                                 <tr>
-                                    <td>
-                                        <div class="d-flex flex-column">
-                                            <h6 class="mb-0 text-sm">{{ $order->purchase_order_number ?? 'N/A' }}</h6>
-                                            <small class="text-muted">Estimate ID: {{ $order->qb_estimate_id }}</small>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="text-xs font-weight-bold">${{ number_format($order->total_amount, 2) }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="text-xs">{{ $order->created_at ? $order->created_at->format('M d, Y') : 'N/A' }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge 
-                                            @if($order->status == 'approved') bg-success 
-                                            @elseif($order->status == 'pending') bg-warning text-dark 
-                                            @elseif($order->status == 'declined') bg-danger 
-                                            @elseif($order->status == 'cancelled') bg-secondary 
-                                            @else bg-info @endif
-                                            ">
-                                            {{ ucfirst($order->status) }}
-                                        </span>
-                                    </td>
+                                    <th>PO Number</th>
+                                    <th>Total Amount</th>
+                                    <th>Order Date</th>
+                                    <th>Status</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="text-center text-muted">No recent orders found.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse ($recentOrders as $order)
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex flex-column">
+                                                <h6 class="mb-0 text-sm">{{ $order->purchase_order_number ?? 'N/A' }}</h6>
+                                                <small class="text-muted">Estimate ID: {{ $order->qb_estimate_id }}</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="text-xs font-weight-bold">${{ number_format($order->total_amount, 2) }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-xs">{{ $order->created_at?->format('M d, Y') ?? 'N/A' }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge 
+                                                @if($order->status == 'approved') bg-success 
+                                                @elseif($order->status == 'pending') bg-warning text-dark 
+                                                @elseif($order->status == 'declined') bg-danger 
+                                                @elseif($order->status == 'cancelled') bg-secondary 
+                                                @else bg-info @endif">
+                                                {{ ucfirst($order->status) }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">No recent orders found.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-
         </div>
       </div>
     </div>

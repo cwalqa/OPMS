@@ -24,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+
+            // Add your session expiration middleware here
+            \App\Http\Middleware\SessionExpiredMiddleware::class,
         ]);
 
         $middleware->api([
@@ -40,6 +43,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'redirectAdmin' => \App\Http\Middleware\RedirectIfAuthenticatedAdmin::class,
         ]);
     })
+
+    
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
