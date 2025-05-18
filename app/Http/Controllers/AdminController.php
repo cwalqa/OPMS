@@ -557,5 +557,25 @@ class AdminController extends Controller
         return redirect()->route('admin.scheduledOrders')->with('success', 'Production schedule deleted successfully.');
     }
 
+    public function updateCustomer(Request $request, $id)
+{
+    $request->validate([
+        'customer_name' => 'required|string|max:255',
+        'company_name' => 'nullable|string|max:255',
+        'email' => 'required|email|max:255',
+        'status' => 'required|in:0,1',
+    ]);
+
+    $customer = \App\Models\QuickbooksCustomer::where('customer_id', $id)->firstOrFail();
+
+    $customer->fully_qualified_name = $request->customer_name;
+    $customer->company_name = $request->company_name;
+    $customer->email = $request->email;
+    $customer->is_active = $request->status;
+    $customer->save();
+
+    return redirect()->route('admin.customers')->with('success', 'Customer updated successfully.');
+}
+
 
 }

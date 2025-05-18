@@ -225,7 +225,7 @@
 
                 // Set form action URL dynamically
                 const form = document.getElementById('editAdminForm');
-                form.action = `/admin/${adminId}/update`;
+                form.action = `/admin/users/update/${adminId}`;
 
                 // Set values in modal fields
                 document.getElementById('admin_name').value = adminName;

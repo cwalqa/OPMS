@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Contracts\Http\Kernel;
 use App\Http\Middleware\RedirectIfUnauthenticated;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,5 +31,7 @@ class AppServiceProvider extends ServiceProvider
                 "default-src 'self'; script-src 'self'; object-src 'none';"
             );
         }
+
+        Paginator::useBootstrapFive();
     }
 }

@@ -225,13 +225,18 @@
 
         // Populate edit modal with customer data
         document.querySelectorAll('.edit-customer-btn').forEach(button => {
-            button.addEventListener('click', function () {
-                document.getElementById('editCustomerId').value = button.getAttribute('data-customer-id');
-                document.getElementById('editCustomerName').value = button.getAttribute('data-customer-name');
-                document.getElementById('editCompanyName').value = button.getAttribute('data-company-name');
-                document.getElementById('editEmail').value = button.getAttribute('data-email');
-                document.getElementById('editStatus').value = button.getAttribute('data-status');
-            });
-        });
+    button.addEventListener('click', function () {
+        const customerId = button.getAttribute('data-customer-id');
+        document.getElementById('editCustomerForm').action = `/admin/users/customers/${customerId}`;
+        
+        // Fill in form fields
+        document.getElementById('editCustomerId').value = customerId;
+        document.getElementById('editCustomerName').value = button.getAttribute('data-customer-name');
+        document.getElementById('editCompanyName').value = button.getAttribute('data-company-name');
+        document.getElementById('editEmail').value = button.getAttribute('data-email');
+        document.getElementById('editStatus').value = button.getAttribute('data-status');
+    });
+});
+
     });
 </script>

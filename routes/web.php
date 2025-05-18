@@ -180,14 +180,17 @@ Route::prefix('admin', )->name('admin.')->middleware(['auth:admin'])->group(func
     
     // User management
     Route::prefix('users')->group(function () {
-        // Customer management
+        // Customers
         Route::get('/customers', [AdminController::class, 'customers'])->name('customers');
         Route::get('/customers/{id}', [AdminController::class, 'customerDetails'])->name('customerDetails');
-        
-        // Admin management
+        Route::put('/customers/{id}', [AdminController::class, 'updateCustomer'])->name('updateCustomer');
+
+
+        // Admins
         Route::get('/admins', [AdminController::class, 'index'])->name('admins');
         Route::post('/addAdmin', [AdminController::class, 'addAdmin'])->name('addAdmin');
         Route::put('/editAdmin/{id}', [AdminController::class, 'editAdmin'])->name('editAdmin');
+        Route::put('/update/{id}', [AdminController::class, 'update'])->name('updateAdmin'); // ✅ Added correctly here
         Route::delete('/deleteAdmin/{id}', [AdminController::class, 'deleteAdmin'])->name('deleteAdmin');
     });
     

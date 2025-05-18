@@ -150,54 +150,54 @@
   <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg bg-white shadow-sm rounded-bottom mb-4">
-    <div class="container-fluid px-3">
-        <h6 class="navbar-brand mb-0 fw-bold">Dashboard</h6>
-        <div class="collapse navbar-collapse justify-content-end">
-            <ul class="navbar-nav">
-                <li class="nav-item d-flex align-items-center">
-                    <a href="#" class="nav-link text-dark fw-semibold" data-bs-toggle="modal" data-bs-target="#companyProfileModal">
-                        <i class="fa fa-user-circle me-2"></i>
-                        Welcome Back, {{ Auth::user()->company_name }}
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+      <div class="container-fluid px-3">
+          <h6 class="navbar-brand mb-0 fw-bold">Dashboard</h6>
+          <div class="collapse navbar-collapse justify-content-end">
+              <ul class="navbar-nav">
+                  <li class="nav-item d-flex align-items-center">
+                      <a href="#" class="nav-link text-dark fw-semibold" data-bs-toggle="modal" data-bs-target="#companyProfileModal">
+                          <i class="fa fa-user-circle me-2"></i>
+                          Welcome Back, {{ Auth::user()->company_name }}
+                      </a>
+                  </li>
+              </ul>
+          </div>
+      </div>
+  </nav>
 
-<!-- Company Profile Modal -->
-<div class="modal fade" id="companyProfileModal" tabindex="-1" aria-labelledby="companyProfileModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <div class="modal-header bg-gradient-primary text-white">
-                <h5 class="modal-title" id="companyProfileModalLabel">
-                    <i class="fas fa-building me-2"></i> Company Profile
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">
-                        <strong>Company Name:</strong> {{ Auth::user()->company_name }}
-                    </li>
-                    <li class="list-group-item">
-                        <strong>Email:</strong> {{ Auth::user()->email }}
-                    </li>
-                    <li class="list-group-item">
-                        <strong>Contact Person:</strong> {{ Auth::user()->contact_person ?? 'N/A' }}
-                    </li>
-                    <li class="list-group-item">
-                        <strong>Joined:</strong> {{ Auth::user()->created_at?->format('M d, Y') ?? 'N/A' }}
-                    </li>
-                </ul>
-            </div>
-            <div class="modal-footer justify-content-between">
-                <small class="text-muted">Data synced with your company profile</small>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+    <!-- Company Profile Modal -->
+    <div class="modal fade" id="companyProfileModal" tabindex="-1" aria-labelledby="companyProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-gradient-primary text-white">
+                    <h5 class="modal-title" id="companyProfileModalLabel">
+                        <i class="fas fa-building me-2"></i> Company Profile
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>Company Name:</strong> {{ Auth::user()->company_name }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Email:</strong> {{ Auth::user()->email }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Contact Person:</strong> {{ Auth::user()->contact_person ?? 'N/A' }}
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Joined:</strong> {{ Auth::user()->created_at?->format('M d, Y') ?? 'N/A' }}
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <small class="text-muted">Data synced with your company profile</small>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- End Navbar -->
     <div class="container-fluid py-4">

@@ -6,6 +6,8 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+
 
 class SessionExpiredMiddleware
 {
@@ -31,10 +33,13 @@ class SessionExpiredMiddleware
         }
     }
 
-    if (!Auth::check()) {
+    $isAdmin = Str::startsWith($request->path(), 'admin');
+    $guard = $isAdmin ? 'admin' : 'web';
+
+    if (!Auth::guard($guard)->check()) {
         return $request->expectsJson()
             ? response()->json(['session_expired' => true], 401)
-            : redirect()->route('login');
+            : redirect()->route($isAdmin ? 'admin.login.form' : 'login');
     }
 
     return $next($request);
