@@ -2,113 +2,115 @@
 
 @section('content')
 	<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-header bg-gradient-primary text-white rounded-top-4">
-                    <h5 class="mb-0"><i class="fas fa-file-invoice me-2"></i> Order Details</h5>
-                </div>
-                <div class="card-body p-4">
+		<div class="row">
+			<div class="col-12">
+				<div class="card shadow-sm border-0 rounded-4">
+					<div class="card-header bg-gradient-primary text-white rounded-top-4">
+						<h5 class="mb-0"><i class="fas fa-file-invoice me-2"></i> Order Details</h5>
+					</div>
+					<div class="card-body p-4">
+						<div class="print-logo text-center mb-4 d-none">
+							<img src="{{ asset('assets/img/logos/cwi.png') }}" alt="Company Logo" style="max-width: 200px;">
+						</div>
 
-                    <!-- Order Info -->
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-3">
-							@php
-								$customer = \App\Models\QuickbooksCustomer::where('customer_id', session('customer.customer_id'))->first();
-								$companyName = $customer ? $customer->company_name : 'Unknown Company';
-							@endphp
-                            <label class="form-label fw-bold">Company Name</label>
-                            <input type="text" class="form-control" value="{{ $companyName }}" readonly>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">Purchase Order Number</label>
-                            <input type="text" class="form-control" value="{{ $order->purchase_order_number }}" readonly>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">Order Date</label>
-                            <input type="text" class="form-control" value="{{ $order->created_at->format('Y-m-d') }}" readonly>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">Total Amount</label>
-                            <input type="text" class="form-control" value="${{ number_format($order->total_amount, 2) }}" readonly>
-                        </div>
-                    </div>
-
-                    <!-- Order Items -->
-                    <h6 class="text-center mb-4">Order Items</h6>
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Product Name</th>
-                                    <th>Product ID</th>
-                                    <th>Quantity</th>
-                                    <th>Unit Price</th>
-                                    <th>Total Cost</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php
-									$orderTotal = 0;
-								@endphp
-								@foreach($order->items as $item)
+						<!-- Order Info -->
+						<div class="row g-3 mb-4">
+							<div class="col-md-3">
 								@php
-									$product = \App\Models\QuickbooksItem::where('item_id', $item->sku)->first();
-									$productName = $product ? $product->name : 'Unknown Product';
-									$orderTotal += $item->amount;
+									$customer = \App\Models\QuickbooksCustomer::where('customer_id', session('customer.customer_id'))->first();
+									$companyName = $customer ? $customer->company_name : 'Unknown Company';
 								@endphp
-                                    <tr>
-                                        <td>{{ $productName }}</td>
-                                        <td>{{ $item->sku }}</td>
-                                        <td>{{ $item->quantity }}</td>
-                                        <td>${{ $item->unit_price }}</td>
-                                        <td>${{ $item->amount }}</td>
-                                    </tr>
-                                @endforeach
-                                <tr class="table-light">
-                                    <td colspan="4" class="text-end fw-bold">Order Total:</td>
-                                    <td><u>${{ number_format($orderTotal, 2) }}</u></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+								<label class="form-label fw-bold">Company Name</label>
+								<input type="text" class="form-control" value="{{ $companyName }}" readonly>
+							</div>
+							<div class="col-md-3">
+								<label class="form-label fw-bold">Purchase Order Number</label>
+								<input type="text" class="form-control" value="{{ $order->purchase_order_number }}" readonly>
+							</div>
+							<div class="col-md-3">
+								<label class="form-label fw-bold">Order Date</label>
+								<input type="text" class="form-control" value="{{ $order->created_at->format('Y-m-d') }}" readonly>
+							</div>
+							<div class="col-md-3">
+								<label class="form-label fw-bold">Total Amount</label>
+								<input type="text" class="form-control" value="${{ number_format($order->total_amount, 2) }}" readonly>
+							</div>
+						</div>
 
-                    <!-- Notes -->
-                    <div class="mt-4">
-                        <label class="form-label fw-bold">Additional Notes</label>
-                        <textarea class="form-control" rows="3" readonly>{{ $order->customer_memo }}</textarea>
-                    </div>
+						<!-- Order Items -->
+						<h6 class="text-center mb-4">Order Items</h6>
+						<div class="table-responsive">
+							<table class="table table-hover align-middle">
+								<thead class="table-light">
+									<tr>
+										<th>Product Name</th>
+										<th>Product ID</th>
+										<th>Quantity</th>
+										<th>Unit Price</th>
+										<th>Total Cost</th>
+									</tr>
+								</thead>
+								<tbody>
+									@php
+										$orderTotal = 0;
+									@endphp
+									@foreach($order->items as $item)
+									@php
+										$product = \App\Models\QuickbooksItem::where('item_id', $item->sku)->first();
+										$productName = $product ? $product->name : 'Unknown Product';
+										$orderTotal += $item->amount;
+									@endphp
+										<tr>
+											<td>{{ $productName }}</td>
+											<td>{{ $item->sku }}</td>
+											<td>{{ $item->quantity }}</td>
+											<td>${{ $item->unit_price }}</td>
+											<td>${{ $item->amount }}</td>
+										</tr>
+									@endforeach
+									<tr class="table-light">
+										<td colspan="4" class="text-end fw-bold">Order Total:</td>
+										<td><u>${{ number_format($orderTotal, 2) }}</u></td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
 
-                    <!-- Action Buttons -->
-                    <div class="d-flex justify-content-between align-items-center mt-5">
-                        <a href="{{ route('client.purchaseOrderHistory') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-1"></i> Back to Order History
-                        </a>
-                        <div>
-                            <button type="button" class="btn btn-primary" onclick="window.print()">
-                                <i class="fas fa-print me-1"></i> Print / Save as PDF
-                            </button>
-							@php
-								$isExpired = $order->created_at->addHours(48)->isPast();
-							@endphp
-                            <button type="button" class="btn btn-warning ms-2" data-bs-toggle="modal" data-bs-target="#modifyOrderModal" {{ $isExpired ? 'disabled' : '' }}>
-                                <i class="fas fa-edit me-1"></i> Modify Order
-                            </button>
-                            <button type="button" class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#cancelOrderModal" {{ $isExpired ? 'disabled' : '' }}>
-                                <i class="fas fa-trash me-1"></i> Cancel Order
-                            </button>
-                        </div>
-                    </div>
+						<!-- Notes -->
+						<div class="mt-4">
+							<label class="form-label fw-bold">Additional Notes</label>
+							<textarea class="form-control" rows="3" readonly>{{ $order->customer_memo }}</textarea>
+						</div>
 
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+						<!-- Action Buttons -->
+						<div class="d-flex justify-content-between align-items-center mt-5 print-exclude">
+							<a href="{{ route('client.purchaseOrderHistory') }}" class="btn btn-outline-secondary">
+								<i class="fas fa-arrow-left me-1"></i> Back to Order History
+							</a>
+							<div>
+								<button type="button" class="btn btn-primary" onclick="window.print()">
+									<i class="fas fa-print me-1"></i> Print / Save as PDF
+								</button>
+								@php
+									$isExpired = $order->created_at->addHours(48)->isPast();
+								@endphp
+								<button type="button" class="btn btn-warning ms-2" data-bs-toggle="modal" data-bs-target="#modifyOrderModal" {{ $isExpired ? 'disabled' : '' }}>
+									<i class="fas fa-edit me-1"></i> Modify Order
+								</button>
+								<button type="button" class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#cancelOrderModal" {{ $isExpired ? 'disabled' : '' }}>
+									<i class="fas fa-trash me-1"></i> Cancel Order
+								</button>
+							</div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
 
 
-	<!-- Modify Order Modal -->
 	<!-- Modify Order Modal -->
 	<div class="modal fade" id="modifyOrderModal" tabindex="-1" aria-labelledby="modifyOrderModalLabel" aria-hidden="true">
 		<div class="modal-dialog modal-xl modal-dialog-centered">
@@ -300,107 +302,138 @@
 
 			// Remove a row
 			document.addEventListener('click', function (e) {
-    if (e.target.closest('.remove-row')) {
-        const btn = e.target.closest('.remove-row');
-        const row = btn.closest('tr');
-        const itemId = btn.getAttribute('data-item-id');
+				if (e.target.closest('.remove-row')) {
+					const btn = e.target.closest('.remove-row');
+					const row = btn.closest('tr');
+					const itemId = btn.getAttribute('data-item-id');
 
-        // If existing item, add to removed items container
-        if (itemId) {
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = 'removed_items[]';
-            hiddenInput.value = itemId;
-            document.getElementById('removedItemsContainer').appendChild(hiddenInput);
-        }
+					// If existing item, add to removed items container
+					if (itemId) {
+						const hiddenInput = document.createElement('input');
+						hiddenInput.type = 'hidden';
+						hiddenInput.name = 'removed_items[]';
+						hiddenInput.value = itemId;
+						document.getElementById('removedItemsContainer').appendChild(hiddenInput);
+					}
 
-        // Remove the row visually
-        row.remove();
+					// Remove the row visually
+					row.remove();
 
-        // Recalculate totals after row removal
-        calculateTotals();
-    }
-});
+					// Recalculate totals after row removal
+					calculateTotals();
+				}
+			});
 		});
 	</script>
 
 
 	<!-- Custom CSS for print view -->
-		<style>
-			@media print {
-				.order-info-row {
-					display: flex;
-					justify-content: space-between; /* Ensure the columns are properly spaced */
-				}
-				.order-info-row .col-md-3 {
-					float: left;
-					width: 23%; /* Adjust the width to fit all columns on a single row */
-				}
-				/* Ensure no page breaks within the order table */
-				.table-responsive {
-					page-break-inside: avoid;
-				}
-				
-				/* Hide elements not needed in the print view */
-				.btn-primary, /* Print/Save as PDF button */
-				.btn-warning, /* Modify Order button */
-				.btn-danger, /* Cancel Order button */
-				.navbar, /* Navigation bar (e.g., Dashboard) */
-				.welcome-section { /* Replace with the class or ID for the "Welcome Back" section */
-					display: none !important;
-				}
+	<style>
+		@media print {
+			/* Hide general UI chrome */
+			header, footer, nav, .navbar, .sidebar, .modal, .btn, .print-exclude,
+			.card-header, .card-footer, .alert, .breadcrumbs, .actions-bar {
+			display: none !important;
 			}
-		</style>
+
+			/* Hide the whole body and selectively show what’s important */
+			body * {
+			visibility: hidden;
+			}
+
+			/* Only show the card-body and its contents */
+			.card-body, .card-body * {
+			visibility: visible;
+			}
+
+			/* Fix layout issues */
+			.card-body {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			padding: 2rem;
+			}
+
+			/* Beautify table printing */
+			table {
+			width: 100% !important;
+			border-collapse: collapse;
+			}
+
+			table th, table td {
+			border: 1px solid #333;
+			padding: 8px;
+			font-size: 14px;
+			}
+
+			/* Optional: white background for legibility */
+			body {
+			background: white !important;
+			}
+
+			.print-logo {
+			display: block !important;
+			visibility: visible !important;
+			}
+
+			.print-logo img {
+			max-width: 200px;
+			margin-bottom: 20px;
+			}
+		}
+	</style>
 
 
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Handle cancel order confirmation
-        const cancelOrderForm = document.getElementById('cancelOrderForm');
-        
-        if (cancelOrderForm) {
-            cancelOrderForm.addEventListener('submit', function (event) {
-                event.preventDefault(); // Prevent default form submission
-                
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: 'Do you really want to cancel this order?',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Yes, Cancel it!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        this.submit(); // Submit the form if confirmed
-                    }
-                });
-            });
-        }
 
-        // Show success or error alerts based on session messages
-        @if(session('success'))
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: "{{ session('success') }}",
-                confirmButtonColor: '#3085d6',
-                confirmButtonText: 'OK'
-            });
-        @endif
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			// Handle cancel order confirmation
+			const cancelOrderForm = document.getElementById('cancelOrderForm');
+			
+			if (cancelOrderForm) {
+				cancelOrderForm.addEventListener('submit', function (event) {
+					event.preventDefault(); // Prevent default form submission
+					
+					Swal.fire({
+						title: 'Are you sure?',
+						text: 'Do you really want to cancel this order?',
+						icon: 'warning',
+						showCancelButton: true,
+						confirmButtonColor: '#d33',
+						cancelButtonColor: '#3085d6',
+						confirmButtonText: 'Yes, Cancel it!'
+					}).then((result) => {
+						if (result.isConfirmed) {
+							this.submit(); // Submit the form if confirmed
+						}
+					});
+				});
+			}
 
-        @if(session('error'))
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops!',
-                text: "{{ session('error') }}",
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'Try Again'
-            });
-        @endif
-    });
-</script>
+			// Show success or error alerts based on session messages
+			@if(session('success'))
+				Swal.fire({
+					icon: 'success',
+					title: 'Success!',
+					text: "{{ session('success') }}",
+					confirmButtonColor: '#3085d6',
+					confirmButtonText: 'OK'
+				});
+			@endif
+
+			@if(session('error'))
+				Swal.fire({
+					icon: 'error',
+					title: 'Oops!',
+					text: "{{ session('error') }}",
+					confirmButtonColor: '#d33',
+					confirmButtonText: 'Try Again'
+				});
+			@endif
+		});
+	</script>
 
 
 	@endsection
