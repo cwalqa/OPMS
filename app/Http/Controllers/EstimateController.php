@@ -16,14 +16,12 @@ use App\Services\PHPMailerService;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CustomerOrderAcknowledgmentMail;
 use App\Mail\AdminPurchaseOrderNotificationMail;
-
 use App\Jobs\SendCustomerOrderMailJob;
 use App\Jobs\SendAdminOrderMailJob;
 use App\Jobs\SendCustomEmailJob;
-
 use Illuminate\Support\Str;
-
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 
 
@@ -80,198 +78,191 @@ class EstimateController extends Controller
     /**
      * Handle form submission and store the estimate.
      */
-    public function store(Request $request)
-    {
-        Log::info('Received estimate form submission.', ['request_data' => $request->all()]);
+public function store(Request $request)
+{
+    Log::info('Received estimate form submission.', ['request_data' => $request->except('_token')]);
 
-        // Refresh QuickBooks access token
-        try {
-            Artisan::call('quickbooks:generate-access-token');
-            Log::info('QuickBooks access token refreshed successfully.');
-        } catch (\Exception $e) {
-            Log::error('Error occurred while refreshing QuickBooks access token.', ['error_message' => $e->getMessage()]);
-            return response()->json(['error' => 'An error occurred while refreshing the QuickBooks access token.'], 500);
-        }
-
-        // Validate form data
+    // 1. Validate input (excluding total_amount)
+    try {
+        Log::info('Validating estimate form...');
         $validated = $request->validate([
-            'customer_id' => 'required|integer',
+            'customer_id' => 'required|integer|exists:quickbooks_customer,id',
             'customer_ref' => 'required|integer',
             'customer_name' => 'required|string|max:255',
             'bill_email' => 'required|email|max:255',
             'customer_memo' => 'nullable|string',
+            'po_date' => 'required|date',
+            'purchase_order_number' => 'required|string|unique:quickbooks_estimates,purchase_order_number',
+            'client_po_number' => 'required|string|max:255',
+            'po_file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx|max:102400',
+            'product_service' => 'required|array|min:1',
+            'product_service.*' => 'required|string|exists:quickbooks_item,item_id',
             'quantity' => 'required|array',
-            'quantity.*' => 'required|numeric|min:1',
-            'item_id' => 'required|array',
-            'item_id.*' => 'required|string', 
-            'purchase_order_number' => 'required|string',
-            'total_amount' => 'required|numeric',
+            'quantity.*' => 'required|numeric|min:0.01',
+            'description' => 'nullable|array',
+            'description.*' => 'nullable|string|max:500',
+        ]);
+        Log::info('Validation passed.');
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        Log::error('Validation failed.', ['errors' => $e->errors()]);
+        return response()->json([
+            'error' => 'Validation failed',
+            'errors' => $e->errors()
+        ], 422);
+    }
+
+    // 2. Refresh QuickBooks token
+    try {
+        Artisan::call('quickbooks:generate-access-token');
+        Log::info('QuickBooks access token refreshed successfully.');
+    } catch (\Exception $e) {
+        Log::error('QuickBooks token refresh failed', ['error' => $e->getMessage()]);
+        return response()->json(['error' => 'Failed to refresh QuickBooks token'], 500);
+    }
+
+    // 3. Begin estimate creation
+    try {
+        DB::beginTransaction();
+
+        // 3.1 Upload PO file
+        try {
+            $poFilePath = $request->file('po_file')->storeAs(
+                'po_documents',
+                time() . '_' . Str::slug($validated['client_po_number']) . '.' . $request->file('po_file')->extension(),
+                'public'
+            );
+        } catch (\Exception $e) {
+            Log::error('PO file upload failed', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'File upload failed'], 500);
+        }
+
+        // 3.2 Create Estimate
+        $estimate = QuickbooksEstimates::create([
+            'customer_ref' => $validated['customer_ref'],
+            'customer_name' => $validated['customer_name'],
+            'bill_email' => $validated['bill_email'],
+            'customer_memo' => $validated['customer_memo'] ?? null,
+            'purchase_order_number' => $validated['purchase_order_number'],
+            'client_po_number' => $validated['client_po_number'],
+            'po_document_path' => $poFilePath,
+            'po_date' => $validated['po_date'],
+            'total_amount' => 0, // Will be updated after item calculation
         ]);
 
-        Log::info('Form data validated successfully.', ['validated_data' => $validated]);
+        // 3.3 Process Items
+        $calculatedTotal = 0;
+        $successfulItems = 0;
+        $orderItems = [];
 
-        try {
-            // Find the QuickBooks customer
-            $quickbooksCustomer = QuickbooksCustomer::find($validated['customer_id']);
-            if (!$quickbooksCustomer) {
-                Log::error('Customer not found in QuickBooks.', ['customer_id' => $validated['customer_id']]);
-                return response()->json(['error' => 'Customer not found in QuickBooks.'], 404);
+        foreach ($validated['product_service'] as $index => $sku) {
+            $item = QuickbooksItem::find($sku);
+            if (!$item) {
+                Log::warning("Item not found for SKU: $sku");
+                continue;
             }
 
-            // Create a new estimate in the application's database
-            $estimate = QuickbooksEstimates::create([
-                'customer_ref' => $validated['customer_id'],
-                'customer_name' => $validated['customer_name'],
-                'bill_email' => $validated['bill_email'],
-                'customer_memo' => strip_tags($validated['customer_memo']),
-                'total_amount' => $validated['total_amount'],
-                'purchase_order_number' => $validated['purchase_order_number'],
+            $quantity = (float)($validated['quantity'][$index] ?? 0);
+            if ($quantity <= 0) continue;
+
+            $unitPrice = (float)$item->unit_price;
+            $amount = $unitPrice * $quantity;
+            $calculatedTotal += $amount;
+            $trackingId = Str::uuid()->toString();
+            $description = $validated['description'][$index] ?? null;
+
+            $estimateItem = $estimate->items()->create([
+                'sku' => $sku,
+                'product_name' => $item->name,
+                'unit_price' => $unitPrice,
+                'quantity' => $quantity,
+                'amount' => $amount,
+                'description' => $description,
+                'tracking_id' => $trackingId,
             ]);
 
-            Log::info('New estimate created in database.', ['estimate_id' => $estimate->id]);
+            // QR Code
+            $qrData = [
+                'estimate_id' => $estimate->id,
+                'item_id' => $estimateItem->id,
+                'product_id' => $sku,
+                'quantity' => $quantity,
+                'tracking_id' => $trackingId,
+            ];
 
-            $orderItems = [];
-            
-            // Loop through each item and create corresponding estimate items
-            foreach ($request->item_id as $index => $itemId) {
-                try {
-                    // Retrieve unit price of the selected product/service
-                    $item = QuickbooksItem::where('item_id', $itemId)->first();
-                    if (!$item) {
-                        Log::error('Item not found in QuickBooks.', ['item_id' => $itemId]);
-                        return response()->json(['error' => 'Item not found in QuickBooks.'], 404);
-                    }
-                    $unitPrice = $item->unit_price;
-
-                    $trackingId = (string) Str::uuid(); // generate once so it's reused below
-
-                    // Create the estimate item in the application's database
-                    $estimateItem = QuickbooksEstimateItems::create([
-                        'quickbooks_estimate_id' => $estimate->id,
-                        'sku' => $itemId, 
-                        'unit_price' => $unitPrice,
-                        'quantity' => $request->quantity[$index],
-                        'amount' => $unitPrice * $request->quantity[$index],
-                        'tracking_id' => $trackingId,
-                    ]);
-
-                    $orderItems[] = $estimateItem;
-
-                    Log::info('New estimate item created for the estimate.', [
-                        'estimate_id' => $estimate->id,
-                        'item_id' => $itemId,
-                        'quantity' => $request->quantity[$index],
-                    ]);
-
-                    // Generate QR code for the item
-                    $qrData = [
-                        'client_name' => $validated['customer_name'],
-                        'client_ref' => $validated['customer_ref'],
-                        'client_id' => $validated['customer_id'],
-                        'purchase_order_id' => $estimate->id,
-                        'product_name' => $item->name,
-                        'product_id' => $itemId,
-                        'quantity' => $request->quantity[$index],
-                        'additional_notes' => $validated['customer_memo'] ?? 'No notes provided',
-                        'tracking_id' => $trackingId,
-                    ];
-
-
-
-                    // dump('Form Data:', $request->all()); 
-                    // dump('QR Data:', $qrData);  
-                    // dd('Stopping here to inspect the data');
-
-                    // Encode the data as a string
-                    $qrDataString = json_encode($qrData);
-
-                    // Generate the QR code file name in the format PurchaseOrderNumber_ProductName_Quantity.png
-                    $qrCodeFileName = $validated['purchase_order_number'] . '_' . str_replace(' ', '_', $item->name) . '_' . $request->quantity[$index] . '.png';
-                    $qrCodePath = public_path('qrcodes/' . $qrCodeFileName);
-
-                    // Check if QR directory exists and create if necessary
-                    if (!file_exists(public_path('qrcodes'))) {
-                        mkdir(public_path('qrcodes'), 0777, true);
-                    }
-
-                    // Generate the QR code and save it
-                    QrCode::format('png')->size(300)->generate($qrDataString, $qrCodePath);
-                    Log::info('QR code generated successfully.', ['qr_code_file' => $qrCodeFileName]);
-
-                    // Save the path to the QR code in the estimate item
-                    $estimateItem->qr_code_path = 'qrcodes/' . $qrCodeFileName;
-                    $estimateItem->save();
-                } catch (\Exception $itemEx) {
-                    Log::error('Error processing estimate item.', ['error_message' => $itemEx->getMessage(), 'item_id' => $itemId]);
-                    return response()->json(['error' => 'Error occurred while processing item ' . $itemId], 500);
-                }
-            }
-
-            
-            // Run the sync-estimates command
+            $qrPath = 'qrcodes/' . $estimate->purchase_order_number . '_' . $sku . '_' . $trackingId . '.png';
             try {
-                Artisan::call('sync-estimates');
-                Log::info('Sync estimates command executed successfully.');
-            } catch (\Exception $syncEx) {
-                Log::error('Error running sync-estimates command.', ['error_message' => $syncEx->getMessage()]);
-                return response()->json(['error' => 'Error syncing estimates.'], 500);
-            }
-
-
-            // Proceed to send emails only if sync was successful
-
-            // Send email to client
-            if (!empty($estimate->bill_email)) {
-                try {
-                    SendCustomerOrderMailJob::dispatch($estimate, $orderItems)->delay(now()->addSeconds(5));
-                    Log::info('Order acknowledgment email sent to client.', [
-                        'estimate_id' => $estimate->id,
-                        'email' => $estimate->bill_email,
-                    ]);
-                } catch (\Exception $e) {
-                    Log::error('Failed to send order acknowledgment email to client.', [
-                        'estimate_id' => $estimate->id,
-                        'email' => $estimate->bill_email,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
-            } else {
-                Log::warning('No customer email found for order acknowledgment notification.', [
-                    'estimate_id' => $estimate->id,
-                ]);
-            }
-
-            // Build recipients list for admin
-            $fallbackAdminEmail = config('mail.admin_notification_email', 'jospk.walker@gmail.com');
-            $recipients = [$fallbackAdminEmail];
-
-            $adminEmail = auth('admin')->user()->email ?? null;
-            if ($adminEmail && $adminEmail !== $fallbackAdminEmail) {
-                $recipients[] = $adminEmail;
-            }
-
-            // Send email to admin
-            try {
-                SendAdminOrderMailJob::dispatch($recipients, $estimate, $orderItems)->delay(now()->addSeconds(5));
-                Log::info('Purchase order notification email sent to admin.', [
-                    'estimate_id' => $estimate->id,
-                    'emails' => $recipients,
-                ]);
+                QrCode::format('png')->size(300)->generate(json_encode($qrData), public_path($qrPath));
+                $estimateItem->update(['qr_code_path' => $qrPath]);
             } catch (\Exception $e) {
-                Log::error('Failed to send purchase order notification to admin.', [
-                    'estimate_id' => $estimate->id,
-                    'emails' => $recipients,
-                    'error' => $e->getMessage(),
-                ]);
+                Log::error("QR code generation failed", ['item_id' => $estimateItem->id, 'error' => $e->getMessage()]);
             }
-            return response()->json(['success' => 'Purchase Order submitted successfully!'], 200);
 
-        } catch (\Exception $e) {
-            Log::error('Error occurred while creating estimate.', ['error_message' => $e->getMessage(), 'trace' => $e->getTrace()]);
-            return response()->json(['error' => 'An error occurred while creating the estimate. Please try again.'], 500);
+            $orderItems[] = $estimateItem;
+            $successfulItems++;
         }
-        
+
+        if ($successfulItems === 0) {
+            throw new \Exception('No valid items were processed');
+        }
+
+        $estimate->update(['total_amount' => $calculatedTotal]);
+
+        // Optional: warn if mismatch with submitted (if frontend still sends total)
+        if ($request->has('total_amount') && abs($calculatedTotal - (float)$request->input('total_amount')) > 0.01) {
+            Log::warning('Submitted total does not match calculated total.', [
+                'submitted' => $request->input('total_amount'),
+                'calculated' => $calculatedTotal
+            ]);
+        }
+
+        DB::commit();
+
+        // 4. Sync with QuickBooks
+        try {
+            Artisan::call('sync-estimates');
+            Log::info('Estimate sync initiated', ['estimate_id' => $estimate->id]);
+        } catch (\Exception $e) {
+            Log::error('Estimate sync failed', [
+                'estimate_id' => $estimate->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        // 5. Send Emails
+        try {
+            if (!empty($estimate->bill_email)) {
+                SendCustomerOrderMailJob::dispatch($estimate, $orderItems)->delay(now()->addSeconds(5));
+            }
+
+            $recipients = array_filter([
+                config('mail.admin_notification_email'),
+                auth('admin')->user()->email ?? null
+            ]);
+
+            if (!empty($recipients)) {
+                SendAdminOrderMailJob::dispatch($recipients, $estimate, $orderItems)->delay(now()->addSeconds(10));
+            }
+        } catch (\Exception $e) {
+            Log::error('Email dispatch failed', ['error' => $e->getMessage()]);
+        }
+
+        return response()->json([
+            'success' => 'Purchase Order submitted successfully!',
+            'estimate_id' => $estimate->id
+        ], 200);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Estimate creation failed', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        return response()->json([
+            'error' => 'Estimate creation failed: ' . $e->getMessage()
+        ], 500);
     }
+}
+
 
 
 
@@ -365,10 +356,6 @@ class EstimateController extends Controller
         </html>";
     }
 
-
-
-
-
     /**
      * Helper method to configure and return DataService instance.
      */
@@ -396,17 +383,14 @@ class EstimateController extends Controller
     public function purchaseOrderHistory()
     {
         $customerId = session('customer.customer_id');
-        $purchaseOrders = QuickbooksEstimates::where('customer_ref', $customerId)
-                        ->orderBy('created_at', 'desc')
-                        ->paginate(10);
 
-        // $purchaseOrders = \App\Models\QuickbooksEstimates::where('customer_ref', Auth::user()->customer_id)
-        //     ->where('status', '!=', 'canceled')
-        //     ->orderByDesc('created_at')
-        //     ->paginate(10);
+        $purchaseOrders = QuickbooksEstimates::where('customer_ref', $customerId)
+            ->orderBy('created_at', 'desc')
+            ->get(); // Fetch all records
 
         return view('client.purchase_order_history', compact('purchaseOrders'));
     }
+
 
     
     public function viewOrderDetails($orderId)

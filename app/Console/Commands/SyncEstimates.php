@@ -19,60 +19,75 @@ class SyncEstimates extends Command
         parent::__construct();
     }
 
-    public function handle()
-    {
-        try {
-            $token_data = QuickBooksToken::where('id', "1")->first();
+    // In SyncEstimates command, modify handle() method:
+public function handle()
+{
+    try {
+        $token_data = QuickBooksToken::first(); // Simplified from where('id',1)->first()
 
-            if($token_data->count()>0)
-            {
-                // Initialize QuickBooks Data Service
-                $this->dataService = DataService::Configure(array(
-                    'auth_mode'       => 'oauth2',
-                    'ClientID'        => config('quickbooks.client_id'),
-                    'ClientSecret'    => config('quickbooks.client_secret'),
-                    'RedirectURI'     => config('quickbooks.redirect_uri'),
-                    'baseUrl'         => config('quickbooks.environment','Development'),
-                    'accessTokenKey'  => $token_data->access_token,
-                    'refreshTokenKey' => $token_data->refresh_token,
-                    'QBORealmID'      => $token_data->realm_id,
-                ));
-
-                $this->dataService->setLogLocation(storage_path('logs/qbo.log'));
-                $this->dataService->throwExceptionOnError(true);
-               
-                // Get all estimates that need to be synced with QuickBooks
-                $estimates = QuickbooksEstimates::whereNull('qb_estimate_id')->orWhere('is_updated','1')->with('items')->get();
-                
-                foreach ($estimates as $estimate) {
-                    try {
-                        $estimate->customer_ref = $this->findOrCreateCustomer($estimate);
-                        
-                        if ($estimate->qb_estimate_id) {
-                        // Update existing estimate in QuickBooks
-                            $qboEstimate = $this->updateEstimateInQBO($estimate);
-                            $estimate->is_updated='0';
-                        } else {
-
-                        // Create new estimate in QuickBooks
-                            $qboEstimate = $this->createEstimateInQBO($estimate); 
-                        }
-
-                        if ($qboEstimate) {
-                            $estimate->qb_estimate_id = $qboEstimate->Id;
-                            $estimate->synced_at = now();
-                            $estimate->save();
-                        }
-                    } catch (\Exception $e) {
-                        \Log::error("Error processing estimate ID: " . $estimate->id . " - " . $e->getMessage());
-                    }
-                }
-            }
-        } catch (\Exception $e) {
-            \Log::error("Error in sync-estimates command: " . $e->getMessage());
-            throw $e;
+        if(!$token_data) {
+            \Log::error("QuickBooks token not found");
+            return;
         }
+
+        // Initialize DataService
+        $this->dataService = DataService::Configure([
+            'auth_mode'       => 'oauth2',
+            'ClientID'        => config('quickbooks.client_id'),
+            'ClientSecret'    => config('quickbooks.client_secret'),
+            'RedirectURI'     => config('quickbooks.redirect_uri'),
+            'baseUrl'         => config('quickbooks.environment','Development'),
+            'accessTokenKey'  => $token_data->access_token,
+            'refreshTokenKey' => $token_data->refresh_token,
+            'QBORealmID'      => $token_data->realm_id,
+        ]);
+
+        $this->dataService->setLogLocation(storage_path('logs/qbo.log'));
+        $this->dataService->throwExceptionOnError(true);
+
+        // Get estimates with items
+        $estimates = QuickbooksEstimates::where(function($q) {
+                $q->whereNull('qb_estimate_id')
+                  ->orWhere('is_updated', '1');
+            })
+            ->with(['items' => function($q) {
+                $q->whereNotNull('sku')
+                  ->where('quantity', '>', 0);
+            }])
+            ->has('items', '>', 0) // Only estimates with items
+            ->get();
+
+        foreach ($estimates as $estimate) {
+            try {
+                if ($estimate->items->isEmpty()) {
+                    \Log::warning("Estimate #{$estimate->id} has no valid items - skipping");
+                    continue;
+                }
+
+                $estimate->customer_ref = $this->findOrCreateCustomer($estimate);
+                
+                if ($estimate->qb_estimate_id) {
+                    $qboEstimate = $this->updateEstimateInQBO($estimate);
+                    $estimate->is_updated = '0';
+                } else {
+                    $qboEstimate = $this->createEstimateInQBO($estimate); 
+                }
+
+                if ($qboEstimate) {
+                    $estimate->qb_estimate_id = $qboEstimate->Id;
+                    $estimate->synced_at = now();
+                    $estimate->save();
+                }
+            } catch (\Exception $e) {
+                \Log::error("Error processing estimate ID: {$estimate->id} - {$e->getMessage()}");
+                \Log::error($e->getTraceAsString());
+            }
+        }
+    } catch (\Exception $e) {
+        \Log::error("Error in sync-estimates command: {$e->getMessage()}");
+        throw $e;
     }
+}
 
     protected function createEstimateInQBO($estimate)
     {
@@ -113,51 +128,53 @@ class SyncEstimates extends Command
     }
 
     protected function mapEstimateData($estimate)
-    {  
-        // Map estimate data to QuickBooks format
-        $estimateData = [
-            'CustomerRef' => [
-                'value' => $estimate->customer_ref,
-            ],
-            "CustomerMemo" => [
-                "value" => $estimate->customer_memo
-            ],
-            "BillEmail" => [
-                 "Address" => $estimate->bill_email
-            ],
-            'Line' => []
-        ];
+{
+    $estimateData = [
+        'CustomerRef' => ['value' => $estimate->customer_ref],
+        'CustomerMemo' => ['value' => $estimate->customer_memo ?? ''],
+        'BillEmail' => ['Address' => $estimate->bill_email],
+        'Line' => []
+    ];
 
-        // Add line items
-        foreach ($estimate->items as $item) {
-            
+    if ($estimate->po_date) {
+        try {
+            $estimateData['TxnDate'] = \Carbon\Carbon::parse($estimate->po_date)->format('Y-m-d');
+        } catch (\Exception $e) {
+            \Log::error("Invalid po_date for estimate {$estimate->id}: {$estimate->po_date}");
+        }
+    }
+
+    foreach ($estimate->items as $item) {
+        try {
             $item_ref = $this->findOrItem($item);
             
-            if(empty($item_ref))
-            {
-                self::error("Items not found in QuickBooks");exit;
+            if(!$item_ref) {
+                \Log::error("Item not found in QuickBooks: SKU {$item->sku}");
+                continue;
             }
 
-            $lineItem = [
-                'Amount' => (double)($item->unit_price*$item->quantity),
+            $estimateData['Line'][] = [
+                'Amount' => (float)($item->unit_price * $item->quantity),
                 'DetailType' => 'SalesItemLineDetail',
+                'Description' => $item->description ?? '',
                 'SalesItemLineDetail' => [
-                    'ItemRef' => [
-                        'value' => $item_ref,
-                    ],
-                    'UnitPrice' => $item->unit_price,
-                    'Qty' => $item->quantity,
-                    'TaxCodeRef' => [
-                        'value' => "NON",
-                    ]
+                    'ItemRef' => ['value' => $item_ref],
+                    'UnitPrice' => (float)$item->unit_price,
+                    'Qty' => (float)$item->quantity,
+                    'TaxCodeRef' => ['value' => "NON"]
                 ]
             ];
-
-            $estimateData['Line'][] = $lineItem;
+        } catch (\Exception $e) {
+            \Log::error("Error processing item: {$item->id} - {$e->getMessage()}");
         }
-
-        return $estimateData;
     }
+
+    if(empty($estimateData['Line'])) {
+        throw new \Exception("No valid line items for estimate {$estimate->id}");
+    }
+
+    return $estimateData;
+}
 
     public function findOrCreateCustomer($customerData)
     {

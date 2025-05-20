@@ -4,6 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  
   <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('assets/img/logos/cwiicon.png') }}">
   <link rel="icon" type="image/png" href="{{ asset('assets/img/logos/cwiicon.png') }}">
   <title>
@@ -76,6 +77,20 @@
 			width: 100% !important;
 			}
 		}
+
+
+    .sidenav {
+        z-index: 1020 !important;
+    }
+
+    /* Bootstrap modal default z-indexes */
+    .modal-backdrop.show {
+        z-index: 1040 !important;
+    }
+
+    .modal.show {
+        z-index: 1050 !important;
+    }
 	</style>
 
 </head>
@@ -123,7 +138,7 @@
             <span class="nav-link-text ms-1">Order History</span>
           </a>
         </li>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <a class="nav-link text-white {{ Route::is('client.canceledOrderHistory') ? 'active bg-gradient-primary' : '' }} " href="{{ route('client.canceledOrderHistory') }}">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">cancel</i>
@@ -138,7 +153,7 @@
             </div>
             <span class="nav-link-text ms-1">Declined Orders</span>
           </a>
-        </li>
+        </li> -->
 
         <li class="nav-item mt-3">
           <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">SYSTEM MANAGEMENT</h6>
@@ -321,6 +336,9 @@
     </div>
   </div>
   <!--   Core JS Files   -->
+
+  @stack('scripts')
+
   <script src="{{ asset('assets/js/core/popper.min.js') }}"></script>
   <script src="{{ asset('assets/js/core/bootstrap.min.js') }}"></script>
   <script src="{{ asset('assets/js/plugins/perfect-scrollbar.min.js') }}"></script>

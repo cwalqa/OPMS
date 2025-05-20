@@ -5,11 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\QuickbooksEstimateItems;
-use App\Models\QuickbooksAdmin;  // Import Admin model for relation
+use App\Models\QuickbooksAdmin;
 
 class QuickbooksEstimates extends Model
 {
     use HasFactory;
+
+    protected $casts = [
+        'po_date' => 'date',
+    ];
 
     protected $fillable = [
         'qb_estimate_id',
@@ -29,6 +33,10 @@ class QuickbooksEstimates extends Model
         'qr_code_path',          // Path to QR code for the order
         'decline_reason',        // Reason for declining the order
         'cancel_reason',         // Reason for cancelling the order
+        'client_po_number',     // NEW: Client-provided PO number
+        'po_document_path',     // NEW: Path to uploaded PO document
+        'description',          // NEW: Free-text description of the estimate
+        'po_date',
     ];
 
     // Relationship with the items in the order
@@ -48,4 +56,6 @@ class QuickbooksEstimates extends Model
     {
         return $this->belongsTo(QuickbooksCustomer::class, 'customer_ref', 'customer_id');
     }
+
+    
 }

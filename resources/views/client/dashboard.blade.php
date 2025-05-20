@@ -69,42 +69,10 @@
             <span class="nav-link-text ms-1">Order History</span>
           </a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link text-white {{ Route::is('client.canceledOrderHistory') ? 'active bg-gradient-primary' : '' }} " href="{{ route('client.canceledOrderHistory') }}">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">cancel</i>
-            </div>
-            <span class="nav-link-text ms-1">Canceled Orders</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-white {{ Route::is('client.declinedOrderHistory') ? 'active bg-gradient-primary' : '' }} " href="{{ route('client.declinedOrderHistory') }}">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">remove_circle</i>
-            </div>
-            <span class="nav-link-text ms-1">Declined Orders</span>
-          </a>
-        </li>
 
         <li class="nav-item mt-3">
           <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">SYSTEM MANAGEMENT</h6>
         </li>
-        <!-- <li class="nav-item">
-          <a class="nav-link text-white " href="../pages/notifications.html">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">notifications</i>
-            </div>
-            <span class="nav-link-text ms-1">Notifications</span>
-          </a>
-        </li> -->
-        <!-- <li class="nav-item">
-          <a class="nav-link text-white " href="../pages/profile.html">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">person</i>
-            </div>
-            <span class="nav-link-text ms-1">Company Profile</span>
-          </a>
-        </li> -->
         <li class="nav-item">
           <a class="nav-link text-white " href="{{ route('client.updatePassword') }}">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
@@ -117,14 +85,6 @@
         <li class="nav-item mt-3">
           <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">SUPPORT</h6>
         </li>
-        <!-- <li class="nav-item">
-          <a class="nav-link text-white " href="tel:+16147870056">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">tty</i>
-            </div>
-            <span class="nav-link-text ms-1">Call Help Desk</span>
-          </a>
-        </li> -->
         <li class="nav-item">
           <a class="nav-link text-white " href="mailto:info@datapluzz.com">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
@@ -209,7 +169,6 @@
                 ->where('customer_ref', $client->customer_id)
                 ->get();
 
-            $totalAmount = $approvedOrders->sum('total_amount');
             $totalOrders = $approvedOrders->count();
         @endphp
 
@@ -220,13 +179,18 @@
                         <i class="material-icons opacity-10">check_circle</i>
                     </div>
                     <div class="text-end pt-1">
-                        <p class="text-sm mb-0 text-capitalize">Your Approved Orders</p>
-                        <h4 class="mb-0">${{ number_format($totalAmount, 2) }}</h4>
+                        <p class="text-sm mb-0 text-capitalize">Approved Orders</p>
+                        <h4 class="mb-0">{{ $totalOrders }}</h4>
                     </div>
                 </div>
                 <hr class="dark horizontal my-0">
                 <div class="card-footer p-3">
-                    <p class="mb-0"><span class="text-success text-sm font-weight-bolder">{{ $totalOrders }}</span> Orders Approved</p>
+                    <p class="mb-0">
+                        <span class="text-success text-sm font-weight-bolder">
+                            <i class="material-icons align-middle text-sm">done_all</i>
+                        </span> 
+                        Ready for Production
+                    </p>
                 </div>
             </div>
         </div>
@@ -241,7 +205,6 @@
                 ->where('customer_ref', $client->customer_id)
                 ->get();
 
-            $totalPendingAmount = $pendingOrders->sum('total_amount');
             $totalPendingOrders = $pendingOrders->count();
         @endphp
 
@@ -253,12 +216,17 @@
                     </div>
                     <div class="text-end pt-1">
                         <p class="text-sm mb-0 text-capitalize">Pending Orders</p>
-                        <h4 class="mb-0">${{ number_format($totalPendingAmount, 2) }}</h4>
+                        <h4 class="mb-0">{{ $totalPendingOrders }}</h4>
                     </div>
                 </div>
                 <hr class="dark horizontal my-0">
                 <div class="card-footer p-3">
-                    <p class="mb-0"><span class="text-warning text-sm font-weight-bolder">{{ $totalPendingOrders }}</span> Orders Awaiting Approval</p>
+                    <p class="mb-0">
+                        <span class="text-warning text-sm font-weight-bolder">
+                            <i class="material-icons align-middle text-sm">pending_actions</i>
+                        </span> 
+                        Awaiting Approval
+                    </p>
                 </div>
             </div>
         </div>
@@ -274,7 +242,6 @@
                 ->where('customer_ref', $client->customer_id)
                 ->get();
 
-            $totalCancelledAmount = $cancelledOrders->sum('total_amount');
             $totalCancelledOrders = $cancelledOrders->count();
         @endphp
 
@@ -286,12 +253,17 @@
                     </div>
                     <div class="text-end pt-1">
                         <p class="text-sm mb-0 text-capitalize">Cancelled Orders</p>
-                        <h4 class="mb-0">${{ number_format($totalCancelledAmount, 2) }}</h4>
+                        <h4 class="mb-0">{{ $totalCancelledOrders }}</h4>
                     </div>
                 </div>
                 <hr class="dark horizontal my-0">
                 <div class="card-footer p-3">
-                    <p class="mb-0"><span class="text-danger text-sm font-weight-bolder">{{ $totalCancelledOrders }}</span> Orders Cancelled</p>
+                    <p class="mb-0">
+                        <span class="text-danger text-sm font-weight-bolder">
+                            <i class="material-icons align-middle text-sm">highlight_off</i>
+                        </span> 
+                        Order Cancelled
+                    </p>
                 </div>
             </div>
         </div>
@@ -301,7 +273,6 @@
                 ->where('customer_ref', $client->customer_id)
                 ->get();
 
-            $totalDeclinedAmount = $declinedOrders->sum('total_amount');
             $totalDeclinedOrders = $declinedOrders->count();
         @endphp
 
@@ -313,12 +284,17 @@
                     </div>
                     <div class="text-end pt-1">
                         <p class="text-sm mb-0 text-capitalize">Declined Orders</p>
-                        <h4 class="mb-0">${{ number_format($totalDeclinedAmount, 2) }}</h4>
+                        <h4 class="mb-0">{{ $totalDeclinedOrders }}</h4>
                     </div>
                 </div>
                 <hr class="dark horizontal my-0">
                 <div class="card-footer p-3">
-                    <p class="mb-0"><span class="text-secondary text-sm font-weight-bolder">{{ $totalDeclinedOrders }}</span> Orders Declined</p>
+                    <p class="mb-0">
+                        <span class="text-secondary text-sm font-weight-bolder">
+                            <i class="material-icons align-middle text-sm">not_interested</i>
+                        </span> 
+                        Order Declined
+                    </p>
                 </div>
             </div>
         </div>
@@ -346,9 +322,9 @@
                             <thead class="table-dark text-white">
                                 <tr>
                                     <th>PO Number</th>
-                                    <th>Total Amount</th>
                                     <th>Order Date</th>
                                     <th>Status</th>
+                                    <th>Documents</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -359,9 +335,6 @@
                                                 <h6 class="mb-0 text-sm">{{ $order->purchase_order_number ?? 'N/A' }}</h6>
                                                 <small class="text-muted">Estimate ID: {{ $order->qb_estimate_id }}</small>
                                             </div>
-                                        </td>
-                                        <td>
-                                            <span class="text-xs font-weight-bold">${{ number_format($order->total_amount, 2) }}</span>
                                         </td>
                                         <td>
                                             <span class="text-xs">{{ $order->created_at?->format('M d, Y') ?? 'N/A' }}</span>
@@ -376,6 +349,40 @@
                                                 {{ ucfirst($order->status) }}
                                             </span>
                                         </td>
+                                        <td>
+                                          @if($order->po_document_path)
+                                              <div class="d-flex align-items-center gap-2">
+                                                  @php
+                                                      $extension = pathinfo($order->po_document_path, PATHINFO_EXTENSION);
+                                                      $iconClass = match(strtolower($extension)) {
+                                                          'pdf' => 'fas fa-file-pdf text-danger',
+                                                          'doc', 'docx' => 'fas fa-file-word text-primary',
+                                                          'xls', 'xlsx' => 'fas fa-file-excel text-success',
+                                                          default => 'fas fa-file-alt text-secondary'
+                                                      };
+                                                      $fileName = basename($order->po_document_path);
+                                                      $fileUrl = asset('storage/' . $order->po_document_path);
+                                                  @endphp
+
+                                                  <i class="{{ $iconClass }} fs-5"></i>
+                                                  <div class="flex-grow-1">
+                                                      <span class="d-block small fw-semibold">{{ $fileName }}</span>
+                                                      <a href="{{ $fileUrl }}" class="text-decoration-none small" download="{{ $fileName }}">
+                                                          <i class="fas fa-download me-1"></i>Download
+                                                      </a>
+                                                      @if($extension === 'pdf')
+                                                          <span class="mx-2">|</span>
+                                                          <a href="{{ $fileUrl }}" target="_blank" class="text-decoration-none small">
+                                                              <i class="fas fa-eye me-1"></i>Preview
+                                                          </a>
+                                                      @endif
+                                                  </div>
+                                              </div>
+                                          @else
+                                              <span class="text-muted small">No document</span>
+                                          @endif
+                                      </td>
+
                                     </tr>
                                 @empty
                                     <tr>
@@ -459,253 +466,6 @@
   <script src="{{ asset('assets/js/plugins/smooth-scrollbar.min.js') }}"></script>
   <script src="{{ asset('assets/js/plugins/chartjs.min.js') }}"></script>
   <script>
-    var ctx = document.getElementById("chart-bars").getContext("2d");
-
-    new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: ["M", "T", "W", "T", "F", "S", "S"],
-        datasets: [{
-          label: "Sales",
-          tension: 0.4,
-          borderWidth: 0,
-          borderRadius: 4,
-          borderSkipped: false,
-          backgroundColor: "rgba(255, 255, 255, .8)",
-          data: [50, 20, 10, 22, 50, 10, 40],
-          maxBarThickness: 6
-        }, ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false,
-          }
-        },
-        interaction: {
-          intersect: false,
-          mode: 'index',
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-              color: 'rgba(255, 255, 255, .2)'
-            },
-            ticks: {
-              suggestedMin: 0,
-              suggestedMax: 500,
-              beginAtZero: true,
-              padding: 10,
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: 'normal',
-                lineHeight: 2
-              },
-              color: "#fff"
-            },
-          },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-              color: 'rgba(255, 255, 255, .2)'
-            },
-            ticks: {
-              display: true,
-              color: '#f8f9fa',
-              padding: 10,
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: 'normal',
-                lineHeight: 2
-              },
-            }
-          },
-        },
-      },
-    });
-
-
-    var ctx2 = document.getElementById("chart-line").getContext("2d");
-
-    new Chart(ctx2, {
-      type: "line",
-      data: {
-        labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        datasets: [{
-          label: "Mobile apps",
-          tension: 0,
-          borderWidth: 0,
-          pointRadius: 5,
-          pointBackgroundColor: "rgba(255, 255, 255, .8)",
-          pointBorderColor: "transparent",
-          borderColor: "rgba(255, 255, 255, .8)",
-          borderColor: "rgba(255, 255, 255, .8)",
-          borderWidth: 4,
-          backgroundColor: "transparent",
-          fill: true,
-          data: [50, 40, 300, 320, 500, 350, 200, 230, 500],
-          maxBarThickness: 6
-
-        }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false,
-          }
-        },
-        interaction: {
-          intersect: false,
-          mode: 'index',
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-              color: 'rgba(255, 255, 255, .2)'
-            },
-            ticks: {
-              display: true,
-              color: '#f8f9fa',
-              padding: 10,
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: 'normal',
-                lineHeight: 2
-              },
-            }
-          },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-              borderDash: [5, 5]
-            },
-            ticks: {
-              display: true,
-              color: '#f8f9fa',
-              padding: 10,
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: 'normal',
-                lineHeight: 2
-              },
-            }
-          },
-        },
-      },
-    });
-
-    var ctx3 = document.getElementById("chart-line-tasks").getContext("2d");
-
-    new Chart(ctx3, {
-      type: "line",
-      data: {
-        labels: ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        datasets: [{
-          label: "Mobile apps",
-          tension: 0,
-          borderWidth: 0,
-          pointRadius: 5,
-          pointBackgroundColor: "rgba(255, 255, 255, .8)",
-          pointBorderColor: "transparent",
-          borderColor: "rgba(255, 255, 255, .8)",
-          borderWidth: 4,
-          backgroundColor: "transparent",
-          fill: true,
-          data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
-          maxBarThickness: 6
-
-        }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false,
-          }
-        },
-        interaction: {
-          intersect: false,
-          mode: 'index',
-        },
-        scales: {
-          y: {
-            grid: {
-              drawBorder: false,
-              display: true,
-              drawOnChartArea: true,
-              drawTicks: false,
-              borderDash: [5, 5],
-              color: 'rgba(255, 255, 255, .2)'
-            },
-            ticks: {
-              display: true,
-              padding: 10,
-              color: '#f8f9fa',
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: 'normal',
-                lineHeight: 2
-              },
-            }
-          },
-          x: {
-            grid: {
-              drawBorder: false,
-              display: false,
-              drawOnChartArea: false,
-              drawTicks: false,
-              borderDash: [5, 5]
-            },
-            ticks: {
-              display: true,
-              color: '#f8f9fa',
-              padding: 10,
-              font: {
-                size: 14,
-                weight: 300,
-                family: "Roboto",
-                style: 'normal',
-                lineHeight: 2
-              },
-            }
-          },
-        },
-      },
-    });
-  </script>
-  <script>
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
       var options = {
@@ -718,8 +478,6 @@
   <script async defer src="https://buttons.github.io/buttons.js"></script>
   <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="{{ asset('assets/js/material-dashboard.min.js?v=3.1.0') }}"></script>
-
-
 
   <script>
     function checkSessionExpired() {
@@ -757,8 +515,7 @@
 
     // Check session expiration every 5 minutes (300,000 ms)
     setInterval(checkSessionExpired, 300000);
-</script>
-
+  </script>
 </body>
 
 </html>
