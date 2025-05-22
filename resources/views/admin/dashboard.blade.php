@@ -150,6 +150,98 @@
           </div>
         </li>
 
+        <!-- ITEMS CHECK-IN MENU -->
+        <li class="nav-item">
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#checkInMenu"
+            data-bs-toggle="collapse" aria-expanded="false">
+            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="material-icons opacity-10">qr_code_scanner</i>
+            </div>
+            <span class="nav-link-text ms-1">Items Check-In</span>
+          </a>
+
+          <div class="collapse" id="checkInMenu">
+            <ul class="nav flex-column ps-3">
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.check_in.index') ? 'active bg-gradient-primary' : '' }}"
+                  href="{{ route('admin.check_in.index') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">list_alt</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Order Items List</span>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.check_in.start') ? 'active bg-gradient-primary' : '' }}"
+                  href="{{ route('admin.check_in.start') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">start</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Start Check-In</span>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link text-white"
+                  href="{{ route('admin.check_in.print_labels', 1) }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">print</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Print Labels</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+
+        <!-- WAREHOUSE MANAGEMENT MENU -->
+        <li class="nav-item">
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#warehouseMenu"
+            data-bs-toggle="collapse" aria-expanded="false">
+            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="material-icons opacity-10">warehouse</i>
+            </div>
+            <span class="nav-link-text ms-1">Warehouses</span>
+          </a>
+
+          <div class="collapse" id="warehouseMenu">
+            <ul class="nav flex-column ps-3">
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.warehouse.index') ? 'active bg-gradient-primary' : '' }}"
+                  href="{{ route('admin.warehouse.index') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">domain</i>
+                  </div>
+                  <span class="nav-link-text ms-1">All Warehouses</span>
+                </a>
+              </li>
+
+              {{-- OPTIONAL: if you want to hardcode a default warehouse (e.g., ID 1) --}}
+              <li class="nav-item">
+                <a class="nav-link text-white"
+                  href="{{ route('admin.warehouse.lots.index', 1) }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">layers</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Lots Management</span>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link text-white"
+                  href="{{ route('admin.warehouse.shelves.index', ['warehouse' => 1, 'lot' => 1]) }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">view_column</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Shelves Management</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+
+
         <li class="nav-item">
           <a class="nav-link text-white d-flex align-items-center collapsed" href="#lineSchedulingMenu" 
             data-bs-toggle="collapse" aria-expanded="false">
@@ -633,35 +725,35 @@
       </div>
 
       <!-- Monthly Order Trends (Line & Bar Chart) -->
-<div class="row mb-4">
-  <!-- Line Chart -->
-  <div class="col-lg-6 mb-4">
-    <div class="card shadow-sm h-100">
-      <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h6 class="m-0 text-primary">
-          <i class="fas fa-chart-line me-2"></i> Monthly Order Trends (Line Chart)
-        </h6>
-      </div>
-      <div class="card-body" style="position: relative; height: 300px;">
-        <canvas id="ordersLineChart"></canvas>
-      </div>
-    </div>
-  </div>
+      <div class="row mb-4">
+        <!-- Line Chart -->
+        <div class="col-lg-6 mb-4">
+          <div class="card shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+              <h6 class="m-0 text-primary">
+                <i class="fas fa-chart-line me-2"></i> Monthly Order Trends (Line Chart)
+              </h6>
+            </div>
+            <div class="card-body" style="position: relative; height: 300px;">
+              <canvas id="ordersLineChart"></canvas>
+            </div>
+          </div>
+        </div>
 
-  <!-- Bar Chart -->
-  <div class="col-lg-6 mb-4">
-    <div class="card shadow-sm h-100">
-      <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h6 class="m-0 text-primary">
-          <i class="fas fa-chart-bar me-2"></i> Monthly Order Trends (Bar Chart)
-        </h6>
+        <!-- Bar Chart -->
+        <div class="col-lg-6 mb-4">
+          <div class="card shadow-sm h-100">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+              <h6 class="m-0 text-primary">
+                <i class="fas fa-chart-bar me-2"></i> Monthly Order Trends (Bar Chart)
+              </h6>
+            </div>
+            <div class="card-body" style="position: relative; height: 300px;">
+              <canvas id="ordersBarChart"></canvas>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card-body" style="position: relative; height: 300px;">
-        <canvas id="ordersBarChart"></canvas>
-      </div>
-    </div>
-  </div>
-</div>
 
 
 

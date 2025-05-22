@@ -206,50 +206,50 @@
 
         <!-- WAREHOUSE MANAGEMENT MENU -->
         <!-- WAREHOUSE MANAGEMENT MENU -->
-<li class="nav-item">
-  <a class="nav-link text-white d-flex align-items-center collapsed" href="#warehouseMenu"
-    data-bs-toggle="collapse" aria-expanded="false">
-    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-      <i class="material-icons opacity-10">warehouse</i>
-    </div>
-    <span class="nav-link-text ms-1">Warehouses</span>
-  </a>
+        <li class="nav-item">
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#warehouseMenu"
+            data-bs-toggle="collapse" aria-expanded="false">
+            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="material-icons opacity-10">warehouse</i>
+            </div>
+            <span class="nav-link-text ms-1">Warehouses</span>
+          </a>
 
-  <div class="collapse" id="warehouseMenu">
-    <ul class="nav flex-column ps-3">
-      <li class="nav-item">
-        <a class="nav-link text-white {{ Route::is('admin.warehouse.index') ? 'active bg-gradient-primary' : '' }}"
-          href="{{ route('admin.warehouse.index') }}">
-          <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-            <i class="material-icons opacity-10">domain</i>
-          </div>
-          <span class="nav-link-text ms-1">All Warehouses</span>
-        </a>
-      </li>
+          <div class="collapse" id="warehouseMenu">
+            <ul class="nav flex-column ps-3">
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.warehouse.index') ? 'active bg-gradient-primary' : '' }}"
+                  href="{{ route('admin.warehouse.index') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">domain</i>
+                  </div>
+                  <span class="nav-link-text ms-1">All Warehouses</span>
+                </a>
+              </li>
 
-      {{-- OPTIONAL: if you want to hardcode a default warehouse (e.g., ID 1) --}}
-      <li class="nav-item">
-        <a class="nav-link text-white"
-          href="{{ route('admin.warehouse.lots.index', 1) }}">
-          <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-            <i class="material-icons opacity-10">layers</i>
-          </div>
-          <span class="nav-link-text ms-1">Lots Management</span>
-        </a>
-      </li>
+              {{-- OPTIONAL: if you want to hardcode a default warehouse (e.g., ID 1) --}}
+              <li class="nav-item">
+                <a class="nav-link text-white"
+                  href="{{ route('admin.warehouse.lots.index', 1) }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">layers</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Lots Management</span>
+                </a>
+              </li>
 
-      <li class="nav-item">
-        <a class="nav-link text-white"
-          href="{{ route('admin.warehouse.shelves.index', ['warehouse' => 1, 'lot' => 1]) }}">
-          <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-            <i class="material-icons opacity-10">view_column</i>
+              <li class="nav-item">
+                <a class="nav-link text-white"
+                  href="{{ route('admin.warehouse.shelves.index', ['warehouse' => 1, 'lot' => 1]) }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">view_column</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Shelves Management</span>
+                </a>
+              </li>
+            </ul>
           </div>
-          <span class="nav-link-text ms-1">Shelves Management</span>
-        </a>
-      </li>
-    </ul>
-  </div>
-</li>
+        </li>
 
 
         <li class="nav-item">
