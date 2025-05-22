@@ -24,6 +24,11 @@ class QuickbooksEstimateItems extends Model
         'amount',  // Add amount which is calculated as quantity * unit_price
         'qr_code_path',  // Add this to allow saving the QR code path
         'tracking_id',  // Add this to allow saving the tracking ID
+        'check_in_status',  // Add this to allow saving the check-in status
+    ];
+
+    protected $attributes = [
+        'check_in_status' => 'pending',
     ];
 
     public function estimate()
@@ -44,6 +49,11 @@ class QuickbooksEstimateItems extends Model
     public function productionSchedules()
     {
         return $this->hasMany(ProductionSchedule::class, 'item_id');
+    }
+
+    public function warehouseItems()
+    {
+        return $this->hasMany(WarehouseItem::class, 'estimate_item_id');
     }
 
 }

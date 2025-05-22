@@ -159,6 +159,99 @@
           </div>
         </li>
 
+        <!-- ITEMS CHECK-IN MENU -->
+        <li class="nav-item">
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#checkInMenu"
+            data-bs-toggle="collapse" aria-expanded="false">
+            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="material-icons opacity-10">qr_code_scanner</i>
+            </div>
+            <span class="nav-link-text ms-1">Items Check-In</span>
+          </a>
+
+          <div class="collapse" id="checkInMenu">
+            <ul class="nav flex-column ps-3">
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.check_in.index') ? 'active bg-gradient-primary' : '' }}"
+                  href="{{ route('admin.check_in.index') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">list_alt</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Order Items List</span>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.check_in.start') ? 'active bg-gradient-primary' : '' }}"
+                  href="{{ route('admin.check_in.start') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">start</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Start Check-In</span>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link text-white"
+                  href="{{ route('admin.check_in.print_labels', 1) }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">print</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Print Labels</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+
+        <!-- WAREHOUSE MANAGEMENT MENU -->
+        <!-- WAREHOUSE MANAGEMENT MENU -->
+<li class="nav-item">
+  <a class="nav-link text-white d-flex align-items-center collapsed" href="#warehouseMenu"
+    data-bs-toggle="collapse" aria-expanded="false">
+    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+      <i class="material-icons opacity-10">warehouse</i>
+    </div>
+    <span class="nav-link-text ms-1">Warehouses</span>
+  </a>
+
+  <div class="collapse" id="warehouseMenu">
+    <ul class="nav flex-column ps-3">
+      <li class="nav-item">
+        <a class="nav-link text-white {{ Route::is('admin.warehouse.index') ? 'active bg-gradient-primary' : '' }}"
+          href="{{ route('admin.warehouse.index') }}">
+          <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="material-icons opacity-10">domain</i>
+          </div>
+          <span class="nav-link-text ms-1">All Warehouses</span>
+        </a>
+      </li>
+
+      {{-- OPTIONAL: if you want to hardcode a default warehouse (e.g., ID 1) --}}
+      <li class="nav-item">
+        <a class="nav-link text-white"
+          href="{{ route('admin.warehouse.lots.index', 1) }}">
+          <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="material-icons opacity-10">layers</i>
+          </div>
+          <span class="nav-link-text ms-1">Lots Management</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link text-white"
+          href="{{ route('admin.warehouse.shelves.index', ['warehouse' => 1, 'lot' => 1]) }}">
+          <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="material-icons opacity-10">view_column</i>
+          </div>
+          <span class="nav-link-text ms-1">Shelves Management</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</li>
+
+
         <li class="nav-item">
           <a class="nav-link text-white d-flex align-items-center collapsed" href="#lineSchedulingMenu" 
             data-bs-toggle="collapse" aria-expanded="false">
@@ -529,6 +622,8 @@
       </div>
     </div>
   </div>
+
+  
   <!--   Core JS Files   -->
   <script src="{{ asset('assets/js/core/popper.min.js') }}"></script>
   <script src="{{ asset('assets/js/core/bootstrap.min.js') }}"></script>
@@ -627,8 +722,10 @@
     });
   </script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 
+@stack('scripts')
 
 </body>
 

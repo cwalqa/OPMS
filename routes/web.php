@@ -22,6 +22,7 @@ use App\Http\Controllers\TransferController;
 
 use App\Http\Controllers\ProductionTrackingController;
 use App\Http\Controllers\PackagingController;
+use App\Http\Controllers\CheckInController;
 
 
 
@@ -217,6 +218,60 @@ Route::prefix('admin', )->name('admin.')->middleware(['auth:admin'])->group(func
 
     });
     
+    Route::prefix('check-in')->name('check_in.')->group(function () {
+        // 🌐 Main Pages
+        Route::get('/', [CheckInController::class, 'index'])->name('index');
+        Route::get('/start', [CheckInController::class, 'start'])->name('start');
+        Route::get('/{estimate}/form', [CheckInController::class, 'show'])->name('show');
+
+        // ✅ Preview page (full-page form preview before check-in)
+        Route::post('/{estimate}/preview', [CheckInController::class, 'preview'])->name('preview');
+
+        // 🔁 Process Check-In Submission
+        Route::post('/{estimate}/process', [CheckInController::class, 'process'])->name('process');
+
+        // ✅ Toggle Status (printed/packed)
+        Route::post('/toggle-status', [CheckInController::class, 'toggleStatus'])->name('toggle_status');
+
+        // 📄 Label printing and PDF export (page-level)
+        Route::get('/{estimate}/print-labels', [CheckInController::class, 'printLabels'])->name('print_labels');
+        Route::get('/{estimate}/generate-pdf', [CheckInController::class, 'generatePdf'])->name('generate_pdf');
+
+        // 🔄 AJAX APIs for dynamic warehouse data
+        Route::get('/warehouse/{warehouse}/lots', [CheckInController::class, 'getWarehouseLots'])->name('lots.get');
+        Route::get('/warehouse/{warehouse}/shelves', [CheckInController::class, 'getWarehouseShelves'])->name('shelves.get');
+
+        // 🧩 Modal routes (for AJAX-loaded modals, distinct paths to avoid conflict)
+        Route::get('/modal/{estimate}/preview', [CheckInController::class, 'previewModal'])->name('preview_modal');
+        Route::get('/modal/{estimate}/print-labels', [CheckInController::class, 'printLabelsModal'])->name('print_labels_modal');
+        Route::get('/modal/show', [CheckInController::class, 'showModal'])->name('show_modal');
+    });
+
+
+    Route::prefix('warehouse')->name('warehouse.')->group(function () {
+        Route::get('/', [WarehouseController::class, 'index'])->name('index');
+        Route::post('/', [WarehouseController::class, 'store'])->name('store');
+        Route::put('/{warehouse}', [WarehouseController::class, 'update'])->name('update');
+        Route::delete('/{warehouse}', [WarehouseController::class, 'destroy'])->name('destroy');
+
+        // Lots nested under warehouse
+        Route::get('{warehouse}/lots', [WarehouseController::class, 'lots'])->name('lots.index');
+        Route::post('{warehouse}/lots', [WarehouseController::class, 'storeLot'])->name('lots.store');
+        Route::put('{warehouse}/lots/{lot}', [WarehouseController::class, 'updateLot'])->name('lots.update');
+        Route::delete('{warehouse}/lots/{lot}', [WarehouseController::class, 'destroyLot'])->name('lots.destroy');
+
+        // Shelves nested under warehouse
+        Route::get('{warehouse}/shelves', [WarehouseController::class, 'warehouseShelves'])->name('shelves.index');
+        Route::post('{warehouse}/shelves', [WarehouseController::class, 'storeShelfFromWarehouse'])->name('shelves.store');
+        Route::put('{warehouse}/shelves/{shelf}', [WarehouseController::class, 'updateShelf'])->name('shelves.update');
+        Route::delete('{warehouse}/shelves/{shelf}', [WarehouseController::class, 'destroyShelf'])->name('shelves.destroy');
+        
+        // Alternative API routes in warehouse controller (as backup)
+        Route::get('/{warehouse}/api/lots', [WarehouseController::class, 'getWarehouseLots'])->name('api.lots');
+        Route::get('/{warehouse}/api/shelves', [WarehouseController::class, 'getWarehouseShelves'])->name('api.shelves');
+    });
+
+    
     // Production line management
     Route::prefix('production-lines')->group(function () {
         Route::get('/', [AdminController::class, 'manageProductionLines'])->name('productionLines');
@@ -399,3 +454,5 @@ Route::middleware(['auth:api'])->prefix('api/packaging')->name('api.packaging.')
     Route::get('/tasks', [PackagingController::class, 'apiGetAssignedTasks'])->name('tasks');
     Route::post('/task/{id}/status', [PackagingController::class, 'apiUpdateTaskStatus'])->name('task.status');
 });
+
+
