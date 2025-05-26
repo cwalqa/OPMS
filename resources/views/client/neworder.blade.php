@@ -218,7 +218,7 @@
                         <div class="card-body">
                             <h6 class="text-primary mb-3"><i class="fas fa-clipboard-check me-2"></i>Review Your Order</h6>
                             
-                            <div class="alert alert-info">
+                            <div class="alert alert-light">
                                 <i class="fas fa-info-circle me-2"></i>
                                 Please review your order details below. If everything looks correct, click "Submit Order" to finalize your purchase order.
                             </div>
