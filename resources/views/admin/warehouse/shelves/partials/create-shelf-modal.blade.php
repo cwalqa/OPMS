@@ -9,7 +9,7 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <form action="{{ route('admin.warehouse.shelves.store', ['warehouse' => $warehouse->id]) }}" method="POST" id="createShelfForm">
+      <form action="{{ route('admin.shelves.store') }}" method="POST" id="createShelfForm">
         @csrf
         <div class="modal-body p-4">
           <div class="mb-3">
@@ -17,7 +17,8 @@
             <select class="form-select" id="shelf_warehouse_id" name="warehouse_id" required>
               <option value="">Select Warehouse</option>
               @foreach($warehouses as $wh)
-                <option value="{{ $wh->id }}" {{ $wh->id == $warehouse->id ? 'selected' : '' }}>
+                <option value="{{ $wh->id }}"
+                  {{ (isset($selectedWarehouseId) && $wh->id == $selectedWarehouseId) ? 'selected' : '' }}>
                   {{ $wh->name }}
                 </option>
               @endforeach

@@ -144,12 +144,22 @@ class WarehouseController extends Controller
     /**
      * --- SHELVES (Global Access) ---
      */
-    public function warehouseShelves()
+    public function warehouseShelves(Request $request)
     {
-        $shelves = WarehouseShelf::with('warehouse')->latest()->get();
+        $selectedWarehouseId = $request->input('warehouse');
+
         $warehouses = Warehouse::orderBy('name')->get();
-        return view('admin.warehouse.shelves.index', compact('shelves', 'warehouses'));
+
+        $shelves = WarehouseShelf::with('warehouse')
+            ->when($selectedWarehouseId, function ($query) use ($selectedWarehouseId) {
+                $query->where('warehouse_id', $selectedWarehouseId);
+            })
+            ->latest()
+            ->get();
+
+        return view('admin.warehouse.shelves.index', compact('shelves', 'warehouses', 'selectedWarehouseId'));
     }
+
 
     public function storeShelfFromWarehouse(Request $request)
     {

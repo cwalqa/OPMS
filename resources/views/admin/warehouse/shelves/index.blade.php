@@ -5,7 +5,7 @@
   <div class="card shadow-sm border-0 rounded-4">
     <div class="card-header bg-gradient-primary text-white rounded-top-4 d-flex justify-content-between align-items-center px-4 py-3">
       <h5 class="mb-0">
-        <i class="fas fa-boxes-stacked me-2"></i> Shelves for Warehouse: {{ $warehouse->name }}
+        <i class="fas fa-boxes-stacked me-2"></i> Warehouse Shelves Management
       </h5>
       <button class="btn btn-light text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#createShelfModal">
         <i class="fas fa-plus me-1"></i> New Shelf
@@ -14,20 +14,20 @@
 
     <div class="card-body px-4 py-3">
       {{-- Filter by warehouse --}}
-      <form id="warehouseFilterForm" class="mb-4 d-flex align-items-end gap-2">
+      <form method="GET" action="{{ route('admin.shelves.index') }}" class="mb-4 d-flex align-items-end gap-2">
         <div class="flex-grow-1">
           <label class="form-label fw-bold">Filter by Warehouse</label>
-          <select id="warehouseFilterSelect" class="form-select">
-            <option value="">-- Select Warehouse --</option>
+          <select name="warehouse" class="form-select" onchange="this.form.submit()">
+            <option value="">-- All Warehouses --</option>
             @foreach($warehouses as $wh)
-              <option value="{{ $wh->id }}" {{ $warehouse->id == $wh->id ? 'selected' : '' }}>
+              <option value="{{ $wh->id }}" {{ (string) request('warehouse') === (string) $wh->id ? 'selected' : '' }}>
                 {{ $wh->name }}
               </option>
             @endforeach
           </select>
         </div>
         <div>
-          <button type="button" class="btn btn-secondary mt-4" onclick="redirectToWarehouse()">Apply</button>
+          <button type="submit" class="btn btn-secondary mt-4">Apply</button>
         </div>
       </form>
 
@@ -35,7 +35,7 @@
       <div class="table-responsive">
         @if($shelves->isEmpty())
           <div class="alert alert-light mb-0">
-            <i class="fas fa-info-circle me-2"></i> No shelves found for this warehouse.
+            <i class="fas fa-info-circle me-2"></i> No shelves found{{ request('warehouse') ? ' for this warehouse.' : '.' }}
           </div>
         @else
           <table class="table table-hover align-middle">
@@ -43,6 +43,7 @@
               <tr>
                 <th>Shelf Code</th>
                 <th>Description</th>
+                <th>Warehouse</th>
                 <th>Created At</th>
                 <th>Status</th>
                 <th class="text-end">Actions</th>
@@ -53,6 +54,7 @@
                 <tr>
                   <td>{{ $shelf->code }}</td>
                   <td>{{ $shelf->description ?? '-' }}</td>
+                  <td>{{ $shelf->warehouse->name ?? '—' }}</td>
                   <td>{{ $shelf->created_at->format('Y-m-d') }}</td>
                   <td>
                     <span class="badge {{ $shelf->is_active ? 'bg-success' : 'bg-secondary' }}">
@@ -63,7 +65,7 @@
                     <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editShelfModal{{ $shelf->id }}">
                       <i class="fas fa-edit me-1"></i> Edit
                     </button>
-                    <form action="{{ route('admin.warehouse.shelves.destroy', [$warehouse->id, $shelf->id]) }}" method="POST">
+                    <form action="{{ route('admin.shelves.destroy', $shelf->id) }}" method="POST" class="d-inline">
                       @csrf
                       @method('DELETE')
                       <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this shelf?')">
@@ -73,10 +75,8 @@
                   </td>
                 </tr>
 
-                {{-- Edit Shelf Modal --}}
                 @include('admin.warehouse.shelves.partials.edit-shelf-modal', [
                     'shelf' => $shelf,
-                    'warehouse' => $warehouse,
                     'warehouses' => $warehouses
                 ])
               @endforeach
@@ -90,34 +90,6 @@
 
 {{-- Create Shelf Modal --}}
 @include('admin.warehouse.shelves.partials.create-shelf-modal', [
-    'warehouse' => $warehouse,
     'warehouses' => $warehouses
 ])
-@endsection
-
-@section('scripts')
-<script>
-// Pre-generate warehouse URLs in Blade and pass to JavaScript
-const warehouseUrls = {
-    @foreach($warehouses as $wh)
-        {{ $wh->id }}: "{{ route('admin.shelves.index', $wh->id) }}",
-    @endforeach
-};
-
-function redirectToWarehouse() {
-    const selectedId = document.getElementById('warehouseFilterSelect').value;
-    console.log('Selected ID:', selectedId); // Debug line
-
-    if (selectedId && warehouseUrls[selectedId]) {
-      console.log('Target URL:', targetUrl); // Debug line
-        window.location.href = warehouseUrls[selectedId];
-    } else if (selectedId) {
-        // Fallback if URL not found in pre-generated list
-        const baseUrl = "{{ url('warehouse') }}";
-        window.location.href = `${baseUrl}/${selectedId}/shelves`;
-    } else {
-        alert("Please select a warehouse.");
-    }
-}
-</script>
 @endsection

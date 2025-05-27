@@ -9,7 +9,7 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <form action="{{ route('admin.warehouse.shelves.update', [$shelf->warehouse_id, $shelf->id]) }}" method="POST" id="editShelfForm{{ $shelf->id }}">
+      <form action="{{ route('admin.shelves.update', [$shelf->warehouse_id, $shelf->id]) }}" method="POST" id="editShelfForm{{ $shelf->id }}">
         @csrf
         @method('PUT')
 
