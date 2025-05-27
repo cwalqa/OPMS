@@ -34,7 +34,7 @@
       {{-- Shelves Table --}}
       <div class="table-responsive">
         @if($shelves->isEmpty())
-          <div class="alert alert-info mb-0">
+          <div class="alert alert-light mb-0">
             <i class="fas fa-info-circle me-2"></i> No shelves found for this warehouse.
           </div>
         @else

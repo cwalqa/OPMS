@@ -8,7 +8,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-info mb-3">
+                    <div class="alert alert-light mb-3">
                         <p><strong>Order:</strong> {{ $schedule->item->order->purchase_order_number }}</p>
                         <p><strong>Product:</strong> {{ $productName }}</p>
                         <p><strong>Planned Quantity:</strong> {{ $schedule->quantity }}</p>

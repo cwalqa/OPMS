@@ -484,108 +484,105 @@ public function store(Request $request)
 {
     $order = QuickbooksEstimates::with('items')->findOrFail($id);
 
-    // Track updated, added, and removed items for reporting
     $updatedItems = [];
     $addedItems = [];
     $removedItems = [];
 
-    // Handle removed items
-    if (!empty($request->removed_items)) {
-        foreach ($request->removed_items as $removedItemId) {
-            $item = QuickbooksEstimateItems::where('id', $removedItemId)
+    // Remove items
+    if ($request->removed_items) {
+        foreach ($request->removed_items as $removedId) {
+            $item = QuickbooksEstimateItems::where('id', $removedId)
                 ->where('quickbooks_estimate_id', $order->id)
                 ->first();
 
             if ($item) {
+                $product = \App\Models\QuickbooksItem::where('item_id', $item->sku)->first();
+
                 $removedItems[] = [
+                    'name' => $product?->name ?? 'Unknown',
                     'product_id' => $item->sku,
+                    'description' => $item->description,
                     'quantity' => $item->quantity,
-                    'unit_price' => $item->unit_price,
-                    'total_cost' => $item->amount,
                 ];
+
                 $item->delete();
             }
         }
     }
 
     // Update existing items
-    if (!empty($request->items)) {
-        foreach ($request->items as $itemId => $itemData) {
-            $item = QuickbooksEstimateItems::where('id', $itemId)
-                ->where('quickbooks_estimate_id', $order->id)
-                ->first();
+    foreach ($request->items ?? [] as $itemId => $data) {
+        $item = QuickbooksEstimateItems::where('id', $itemId)
+            ->where('quickbooks_estimate_id', $order->id)
+            ->first();
 
-            if ($item) {
-                $oldQuantity = $item->quantity;
-                $item->quantity = $itemData['quantity'];
-                $item->amount = $itemData['quantity'] * $itemData['unit_price'];
-                $item->save();
+        if ($item) {
+            $originalQty = $item->quantity;
+            $item->quantity = $data['quantity'] ?? 1;
+            $item->unit_price = $data['unit_price'] ?? 0;
+            $item->description = $data['description'] ?? '';
+            $item->amount = $item->quantity * $item->unit_price;
 
-                $updatedItems[] = [
-                    'product_id' => $item->sku,
-                    'old_quantity' => $oldQuantity,
-                    'new_quantity' => $itemData['quantity'],
-                    'unit_price' => $itemData['unit_price'],
-                    'total_cost' => $item->amount,
-                ];
-            }
+            $item->save();
+
+            $product = \App\Models\QuickbooksItem::where('item_id', $item->sku)->first();
+
+            $updatedItems[] = [
+                'name' => $product?->name ?? 'Unknown',
+                'product_id' => $item->sku,
+                'description' => $item->description,
+                'old_quantity' => $originalQty,
+                'new_quantity' => $item->quantity,
+                'unit_price' => number_format($item->unit_price, 2),
+                'total_cost' => number_format($item->quantity * $item->unit_price, 2),
+            ];
         }
     }
 
     // Add new items
-    if (!empty($request->new_items)) {
-        foreach ($request->new_items as $newItem) {
-            if (!empty($newItem['product_id']) && !empty($newItem['quantity']) && !empty($newItem['unit_price'])) {
-                $amount = $newItem['quantity'] * $newItem['unit_price'];
+    foreach ($request->new_items ?? [] as $new) {
+        if (!empty($new['product_id']) && !empty($new['quantity'])) {
+            $unitPrice = $new['unit_price'] ?? 0;
+            $quantity = $new['quantity'];
 
-                $createdItem = QuickbooksEstimateItems::create([
-                    'quickbooks_estimate_id' => $order->id,
-                    'sku' => $newItem['product_id'],
-                    'quantity' => $newItem['quantity'],
-                    'unit_price' => $newItem['unit_price'],
-                    'amount' => $amount,
-                ]);
+           $item = QuickbooksEstimateItems::create([
+                'quickbooks_estimate_id' => $order->id,
+                'sku' => $new['product_id'],
+                'description' => $new['description'] ?? '',
+                'quantity' => $new['quantity'],
+                'unit_price' => $new['unit_price'],
+                'amount' => $new['quantity'] * $new['unit_price'],
+            ]);
 
-                $addedItems[] = [
-                    'product_id' => $newItem['product_id'],
-                    'quantity' => $newItem['quantity'],
-                    'unit_price' => $newItem['unit_price'],
-                    'total_cost' => $amount,
-                ];
-            }
+
+            $product = \App\Models\QuickbooksItem::where('item_id', $item->sku)->first();
+
+            $addedItems[] = [
+                'name' => $product?->name ?? 'Unknown',
+                'product_id' => $item->sku,
+                'description' => $item->description,
+                'quantity' => $item->quantity,
+            ];
         }
     }
 
-    // Recalculate order total from current active items only
-    $currentTotal = QuickbooksEstimateItems::where('quickbooks_estimate_id', $order->id)->sum('amount');
-
+    // Update order summary
+    $order->total_amount = $order->items()->sum('amount');
     $order->customer_memo = $request->customer_memo;
-    $order->total_amount = $currentTotal;
     $order->save();
 
-    // Prepare email data
-    $emailData = [
-        'order_number' => $order->purchase_order_number,
-        'updated_items' => $updatedItems,
-        'added_items' => $addedItems,
-        'removed_items' => $removedItems,
-        'total_amount' => $currentTotal,
-        'customer_memo' => $order->customer_memo,
-    ];
-
-    // Send email notifications (queued or immediate)
-    Mail::send('emails.order_updated_customer', $emailData, function ($message) use ($order) {
-        $message->to($order->bill_email)
-            ->subject('Your Order Has Been Updated');
+    // Send update emails
+    Mail::send('emails.order_updated_customer', compact('order', 'updatedItems', 'addedItems', 'removedItems'), function ($msg) use ($order) {
+        $msg->to($order->bill_email)->subject('Order Updated');
     });
 
-    Mail::send('emails.order_updated_admin', $emailData, function ($message) {
-        $message->to('jospk.walker@gmail.com')
-            ->subject('An Order Has Been Modified');
+    Mail::send('emails.order_updated_admin', compact('order', 'updatedItems', 'addedItems', 'removedItems'), function ($msg) {
+        $msg->to('jospk.walker@gmail.com')->subject('Client Order Updated');
     });
 
-    return redirect()->back()->with('success', 'Order updated successfully.');
+    return redirect()->back()->with('success', 'Order updated.');
 }
+
 
     
 

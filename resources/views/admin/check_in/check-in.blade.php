@@ -91,7 +91,7 @@
                     </tbody>
                 </table>
 
-                <div class="alert alert-info small">
+                <div class="alert alert-light small">
                     <i class="fas fa-info-circle me-1"></i>
                     Items already marked as <strong>checked in</strong> are disabled.
                     Only pending ones will be processed. <strong>Lots and Shelves are now optional</strong> - you can proceed with just a warehouse selected.

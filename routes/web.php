@@ -224,24 +224,18 @@ Route::prefix('admin', )->name('admin.')->middleware(['auth:admin'])->group(func
         Route::get('/start', [CheckInController::class, 'start'])->name('start');
         Route::get('/{estimate}/form', [CheckInController::class, 'show'])->name('show');
 
-        // ✅ Preview page (full-page form preview before check-in)
         Route::post('/{estimate}/preview', [CheckInController::class, 'preview'])->name('preview');
 
-        // 🔁 Process Check-In Submission
         Route::post('/{estimate}/process', [CheckInController::class, 'process'])->name('process');
 
-        // ✅ Toggle Status (printed/packed)
         Route::post('/toggle-status', [CheckInController::class, 'toggleStatus'])->name('toggle_status');
 
-        // 📄 Label printing and PDF export (page-level)
         Route::get('/{estimate}/print-labels', [CheckInController::class, 'printLabels'])->name('print_labels');
         Route::get('/{estimate}/generate-pdf', [CheckInController::class, 'generatePdf'])->name('generate_pdf');
 
-        // 🔄 AJAX APIs for dynamic warehouse data
         Route::get('/warehouse/{warehouse}/lots', [CheckInController::class, 'getWarehouseLots'])->name('lots.get');
         Route::get('/warehouse/{warehouse}/shelves', [CheckInController::class, 'getWarehouseShelves'])->name('shelves.get');
 
-        // 🧩 Modal routes (for AJAX-loaded modals, distinct paths to avoid conflict)
         Route::get('/modal/{estimate}/preview', [CheckInController::class, 'previewModal'])->name('preview_modal');
         Route::get('/modal/{estimate}/print-labels', [CheckInController::class, 'printLabelsModal'])->name('print_labels_modal');
         Route::get('/modal/show', [CheckInController::class, 'showModal'])->name('show_modal');

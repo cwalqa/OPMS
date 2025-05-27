@@ -20,11 +20,12 @@ class QuickbooksEstimateItems extends Model
         'tax_code_ref',
         'detail_type',
         'discount_percent',
-        'sku', // Add 'sku' to the fillable attributes
-        'amount',  // Add amount which is calculated as quantity * unit_price
-        'qr_code_path',  // Add this to allow saving the QR code path
-        'tracking_id',  // Add this to allow saving the tracking ID
-        'check_in_status',  // Add this to allow saving the check-in status
+        'sku',
+        'amount',
+        'qr_code_path',
+        'tracking_id',
+        'check_in_status',
+        'product_name', // ✅ Add this line
     ];
 
     protected $attributes = [
