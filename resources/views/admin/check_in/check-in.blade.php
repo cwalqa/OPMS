@@ -443,7 +443,7 @@ function testDropdowns() {
         const itemId = select.dataset.item;
         const selectedValue = select.value;
         
-        html += `<div class="alert alert-info small mb-2">
+        html += `<div class="alert alert-light small mb-2">
             <strong>Item ${itemId}:</strong><br>
             - Warehouse Select Value: "${selectedValue}" (${typeof selectedValue})<br>
             - Available warehouses: ${warehouses.map(w => `${w.name} (ID: ${w.id})`).join(', ')}<br>

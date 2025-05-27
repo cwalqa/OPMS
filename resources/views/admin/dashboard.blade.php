@@ -220,7 +220,7 @@
               {{-- OPTIONAL: if you want to hardcode a default warehouse (e.g., ID 1) --}}
               <li class="nav-item">
                 <a class="nav-link text-white"
-                  href="{{ route('admin.warehouse.lots.index', 1) }}">
+                  href="{{ route('admin.lots.index', 1) }}">
                   <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                     <i class="material-icons opacity-10">layers</i>
                   </div>
@@ -230,7 +230,7 @@
 
               <li class="nav-item">
                 <a class="nav-link text-white"
-                  href="{{ route('admin.warehouse.shelves.index', ['warehouse' => 1, 'lot' => 1]) }}">
+                  href="{{ route('admin.shelves.index', ['warehouse' => 1, 'lot' => 1]) }}">
                   <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                     <i class="material-icons opacity-10">view_column</i>
                   </div>

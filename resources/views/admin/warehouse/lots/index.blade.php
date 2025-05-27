@@ -12,31 +12,28 @@
     </div>
 
     <div class="card-body px-4 py-3">
-      <form method="GET" action="{{ route('admin.warehouse.lots.index', ['warehouse' => request('warehouse', $warehouse->id ?? '')]) }}" class="mb-4 d-flex align-items-end gap-2">
-        @php
-            $selectedWarehouseId = request('warehouse', $warehouse->id ?? '');
-        @endphp
+      <form method="GET" action="{{ route('admin.lots.index') }}" class="mb-4 d-flex align-items-end gap-2">
+  <div class="flex-grow-1">
+    <label class="form-label fw-bold">Filter by Warehouse</label>
+    <select name="warehouse" class="form-select" onchange="this.form.submit()">
+      <option value="">-- All Warehouses --</option>
+      @foreach($warehouses as $wh)
+        <option value="{{ $wh->id }}" {{ (string) request('warehouse') === (string) $wh->id ? 'selected' : '' }}>
+            {{ $wh->name }}
+        </option>
+      @endforeach
+    </select>
+  </div>
+  <div>
+    <button type="submit" class="btn btn-secondary mt-4">Apply</button>
+  </div>
+</form>
 
-        <div class="flex-grow-1">
-          <label class="form-label fw-bold">Filter by Warehouse</label>
-          <select name="warehouse" class="form-select" onchange="this.form.submit()">
-            <option value="">-- Select Warehouse --</option>
-            @foreach($warehouses as $wh)
-              <option value="{{ $wh->id }}" {{ (string) $selectedWarehouseId === (string) $wh->id ? 'selected' : '' }}>
-                  {{ $wh->name }}
-              </option>
-            @endforeach
-          </select>
-        </div>
-        <div>
-          <button type="submit" class="btn btn-secondary mt-4">Apply</button>
-        </div>
-      </form>
 
       <div class="table-responsive">
         @if($lots->isEmpty())
-          <div class="alert alert-info">
-            <i class="fas fa-info-circle me-2"></i> No lots found for this warehouse.
+          <div class="alert alert-light">
+            <i class="fas fa-info-circle me-2"></i> No lots found{{ $selectedWarehouseId ? ' for this warehouse' : '' }}.
           </div>
         @else
           <table class="table table-hover align-middle">
@@ -44,6 +41,7 @@
               <tr>
                 <th>Lot Code</th>
                 <th>Description</th>
+                <th>Warehouse</th>
                 <th>Created At</th>
                 <th>Status</th>
                 <th class="text-end">Actions</th>
@@ -54,6 +52,7 @@
                 <tr>
                   <td>{{ $lot->code }}</td>
                   <td>{{ $lot->description ?? '-' }}</td>
+                  <td>{{ $lot->warehouse->name ?? '-' }}</td>
                   <td>{{ $lot->created_at->format('Y-m-d') }}</td>
                   <td>
                     <span class="badge {{ $lot->is_active ? 'bg-success' : 'bg-secondary' }}">
@@ -64,7 +63,7 @@
                     <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editLotModal{{ $lot->id }}">
                       <i class="fas fa-edit me-1"></i> Edit
                     </button>
-                    <form action="{{ route('admin.warehouse.lots.destroy', [$warehouse->id, $lot->id]) }}" method="POST" class="d-inline">
+                    <form action="{{ route('admin.lots.destroy', $lot->id) }}" method="POST" class="d-inline">
                       @csrf
                       @method('DELETE')
                       <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this lot?')">
@@ -73,7 +72,7 @@
                     </form>
                   </td>
                 </tr>
-                @include('admin.warehouse.lots.partials.edit-lot-modal', ['lot' => $lot, 'warehouse' => $warehouse])
+                @include('admin.warehouse.lots.partials.edit-lot-modal', ['lot' => $lot])
               @endforeach
             </tbody>
           </table>

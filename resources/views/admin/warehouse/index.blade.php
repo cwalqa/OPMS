@@ -29,7 +29,7 @@
             @endif
 
             @if($warehouses->isEmpty())
-                <div class="alert alert-info mb-0">
+                <div class="alert alert-light mb-0">
                     <i class="fas fa-info-circle me-2"></i> No warehouses found.
                 </div>
             @else

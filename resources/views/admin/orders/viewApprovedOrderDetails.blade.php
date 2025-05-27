@@ -83,10 +83,19 @@
 
                         <hr />
 
-                        <!-- Print Order Button -->
-                        <div class="d-flex justify-content-end mt-4">
-                            <button class="btn btn-primary" onclick="window.print()">Print Order</button>
+                        <!-- Back + Print Buttons -->
+                        <div class="d-flex justify-content-between align-items-center mt-4 px-3">
+                            <!-- Back Button (left) -->
+                            <a href="{{ url()->previous() }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back
+                            </a>
+
+                            <!-- Print Button (right) -->
+                            <button class="btn btn-primary" onclick="window.print()">
+                                <i class="fas fa-print me-1"></i> Print Order
+                            </button>
                         </div>
+
                     </div>
                 </div>
             </div>

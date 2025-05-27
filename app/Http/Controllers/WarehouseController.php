@@ -64,41 +64,53 @@ class WarehouseController extends Controller
     }
 
     /**
-     * --- API METHODS FOR LOTS AND SHELVES ---
+     * --- API METHODS ---
      */
     public function getWarehouseLots($warehouseId)
     {
         $lots = WarehouseLot::where('warehouse_id', $warehouseId)
-                           ->where('is_active', true)
-                           ->select('id', 'code', 'description')
-                           ->orderBy('code')
-                           ->get();
-        
+            ->where('is_active', true)
+            ->select('id', 'code', 'description')
+            ->orderBy('code')
+            ->get();
+
         return response()->json($lots);
     }
 
     public function getWarehouseShelves($warehouseId)
     {
-        $shelves = WarehouseShelf::where('warehouse_id', $warehouseId) 
-                                ->where('is_active', true)
-                                ->select('id', 'code', 'description')
-                                ->orderBy('code')
-                                ->get();
-        
+        $shelves = WarehouseShelf::where('warehouse_id', $warehouseId)
+            ->where('is_active', true)
+            ->select('id', 'code', 'description')
+            ->orderBy('code')
+            ->get();
+
         return response()->json($shelves);
     }
 
     /**
-     * --- LOTS ---
+     * --- LOTS (Global Access) ---
      */
-    public function lots(Warehouse $warehouse)
+    public function lots(Request $request)
     {
-        $lots = $warehouse->lots()->latest()->get();
-        $warehouses = Warehouse::orderBy('name')->get(); // for filter dropdown
-        return view('admin.warehouse.lots.index', compact('warehouse', 'lots', 'warehouses'));
+        $selectedWarehouseId = $request->input('warehouse');
+
+        // Retrieve all warehouses for the filter dropdown
+        $warehouses = Warehouse::orderBy('name')->get();
+
+        // If a warehouse is selected, filter lots by it
+        $lots = WarehouseLot::with('warehouse')
+            ->when($selectedWarehouseId, function ($query) use ($selectedWarehouseId) {
+                $query->where('warehouse_id', $selectedWarehouseId);
+            })
+            ->latest()
+            ->get();
+
+        return view('admin.warehouse.lots.index', compact('lots', 'warehouses', 'selectedWarehouseId'));
     }
 
-    public function storeLot(Request $request, $warehouse)
+
+    public function storeLot(Request $request)
     {
         $request->validate([
             'warehouse_id' => 'required|exists:warehouses,id',
@@ -107,13 +119,11 @@ class WarehouseController extends Controller
             'is_active' => 'required|boolean',
         ]);
 
-        $warehouseModel = Warehouse::findOrFail($request->warehouse_id);
-        $warehouseModel->lots()->create($request->only(['code', 'description', 'is_active']));
-
+        WarehouseLot::create($request->only(['warehouse_id', 'code', 'description', 'is_active']));
         return back()->with('success', 'Lot added successfully.');
     }
 
-    public function updateLot(Request $request, Warehouse $warehouse, WarehouseLot $lot)
+    public function updateLot(Request $request, WarehouseLot $lot)
     {
         $request->validate([
             'code' => 'required|string|max:50|unique:warehouse_lots,code,' . $lot->id,
@@ -125,39 +135,36 @@ class WarehouseController extends Controller
         return back()->with('success', 'Lot updated successfully.');
     }
 
-    public function destroyLot(Warehouse $warehouse, WarehouseLot $lot)
+    public function destroyLot(WarehouseLot $lot)
     {
         $lot->delete();
         return back()->with('success', 'Lot deleted.');
     }
 
     /**
-     * --- SHELVES ---
+     * --- SHELVES (Global Access) ---
      */
-    public function warehouseShelves(Warehouse $warehouse)
+    public function warehouseShelves()
     {
-        $shelves = $warehouse->shelves()->latest()->get();
-        $warehouses = Warehouse::orderBy('name')->get(); // For dropdown filter
-
-        return view('admin.warehouse.shelves.index', compact('warehouse', 'shelves', 'warehouses'));
+        $shelves = WarehouseShelf::with('warehouse')->latest()->get();
+        $warehouses = Warehouse::orderBy('name')->get();
+        return view('admin.warehouse.shelves.index', compact('shelves', 'warehouses'));
     }
 
-    public function storeShelfFromWarehouse(Request $request, Warehouse $warehouse)
+    public function storeShelfFromWarehouse(Request $request)
     {
-        $validated = $request->validate([
-            'code' => 'required|string|max:255|unique:warehouse_shelves,code',
-            'description' => 'nullable|string',
-            'is_active' => 'required|boolean',
+        $request->validate([
             'warehouse_id' => 'required|exists:warehouses,id',
+            'code' => 'required|string|max:255|unique:warehouse_shelves,code',
+            'description' => 'nullable|string|max:1000',
+            'is_active' => 'required|boolean',
         ]);
 
-        WarehouseShelf::create($validated);
-
-        return redirect()->route('admin.warehouse.shelves.index', $warehouse->id)
-                         ->with('success', 'Shelf created successfully.');
+        WarehouseShelf::create($request->only(['warehouse_id', 'code', 'description', 'is_active']));
+        return back()->with('success', 'Shelf created successfully.');
     }
 
-    public function updateShelf(Request $request, Warehouse $warehouse, WarehouseShelf $shelf)
+    public function updateShelf(Request $request, WarehouseShelf $shelf)
     {
         $request->validate([
             'code' => 'required|string|max:255|unique:warehouse_shelves,code,' . $shelf->id,
@@ -167,11 +174,10 @@ class WarehouseController extends Controller
         ]);
 
         $shelf->update($request->only(['warehouse_id', 'code', 'description', 'is_active']));
-
         return back()->with('success', 'Shelf updated successfully.');
     }
 
-    public function destroyShelf(Warehouse $warehouse, WarehouseShelf $shelf)
+    public function destroyShelf(WarehouseShelf $shelf)
     {
         $shelf->delete();
         return back()->with('success', 'Shelf deleted.');

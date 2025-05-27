@@ -47,22 +47,19 @@
 </head>
 
 <body class="g-sidenav-show  bg-gray-200">
-  <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3 bg-gradient-dark" id="sidenav-main">
+  <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3   bg-gradient-dark" id="sidenav-main">
     <div class="sidenav-header">
-      <i class="fas fa-times p-3 cursor-pointer text-white opacity-5 position-absolute end-0 top-0 d-none d-xl-none" id="iconSidenav"></i>
+      <i class="fas fa-times p-3 cursor-pointer text-white opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
       <a class="navbar-brand m-0" href="https://datapluzz.com" target="_blank">
         <img src="{{ asset('assets/img/logos/cwi.png') }}" class="navbar-brand-img h-100" alt="main_logo">
         <span class="ms-1 font-weight-bold text-white">ColorWrap Inc.</span>
       </a>
     </div>
-
     <hr class="horizontal light mt-0 mb-2">
-    <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main">
+    <div class="collapse navbar-collapse  w-auto " id="sidenav-collapse-main">
       <ul class="navbar-nav">
-
-        {{-- OVERVIEW --}}
         <li class="nav-item mt-3">
-          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">Overview</h6>
+          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">OVERVIEW</h6>
         </li>
         <li class="nav-item">
           <a class="nav-link text-white {{ Route::is('admin.dashboard') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.dashboard') }}">
@@ -73,123 +70,402 @@
           </a>
         </li>
 
-        {{-- USER MANAGEMENT --}}
         <li class="nav-item mt-3">
-          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">Administration</h6>
+          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">USER MANAGEMENT</h6>
         </li>
+        
+
         <li class="nav-item">
-          <a class="nav-link text-white collapsed d-flex align-items-center" href="#adminMenu" data-bs-toggle="collapse">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">group</i>
-            </div>
-            <span class="nav-link-text ms-1">User & Role Management</span>
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#userManagementMenu" 
+            data-bs-toggle="collapse" aria-expanded="false">
+              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                  <i class="material-icons opacity-10">group</i>
+              </div>
+              <span class="nav-link-text ms-1">User Management</span>
+              <!-- <i class="material-icons ms-auto dropdown-icon">expand_more</i> -->
           </a>
-          <div class="collapse" id="adminMenu">
+
+          <!-- Dropdown Menu -->
+          <div class="collapse" id="userManagementMenu">
+              <ul class="nav flex-column ps-3">
+                  <li class="nav-item">
+                      <a class="nav-link text-white {{ Route::is('admin.customers') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.customers') }}">
+                          <i class="material-icons opacity-10">person</i> Clients & Companies
+                      </a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link text-white {{ Route::is('admin.admins') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.admins') }}">
+                          <i class="material-icons opacity-10">engineering</i> System Administrators
+                      </a>
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link text-white {{ Route::is('admin.roles') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.roles') }}">
+                          <i class="material-icons opacity-10">admin_panel_settings</i> Roles & Permissions
+                      </a>
+                  </li>
+              </ul>
+          </div>
+        </li>
+
+        <li class="nav-item mt-5">
+          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">ORDER PROCESSING MODULE</h6>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#frontDeskMenu" 
+            data-bs-toggle="collapse" aria-expanded="false">
+              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                  <i class="material-icons opacity-10">rule</i>
+              </div>
+              <span class="nav-link-text ms-1">Orders</span>
+              <!-- <i class="material-icons ms-auto dropdown-icon">&#xE313;</i> -->
+          </a>
+          <!-- Dropdown Menu -->
+          <div class="collapse" id="frontDeskMenu">
+              <ul class="nav flex-column ps-3">
+                <li class="nav-item">
+                  <a class="nav-link text-white {{ Route::is('admin.reviewOrders') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.reviewOrders') }}">
+                    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                      <i class="material-icons opacity-10">rule</i>
+                    </div>
+                    <span class="nav-link-text ms-1">Review Purchase Orders</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link text-white {{ Route::is('admin.approvedOrders') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.approvedOrders') }}">
+                    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                      <i class="material-icons opacity-10">check_circle</i>
+                    </div>
+                    <span class="nav-link-text ms-1">Approved Orders</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link text-white {{ Route::is('admin.declinedOrders') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.declinedOrders') }}">
+                    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                      <i class="material-icons opacity-10">block</i>
+                    </div>
+                    <span class="nav-link-text ms-1">Declined Orders</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link text-white {{ Route::is('admin.canceledOrders') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.canceledOrders') }}">
+                    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                      <i class="material-icons opacity-10">cancel</i>
+                    </div>
+                    <span class="nav-link-text ms-1">Canceled Orders</span>
+                  </a>
+                </li>
+              </ul>
+          </div>
+        </li>
+
+        <!-- ITEMS CHECK-IN MENU -->
+        <li class="nav-item">
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#checkInMenu"
+            data-bs-toggle="collapse" aria-expanded="false">
+            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="material-icons opacity-10">qr_code_scanner</i>
+            </div>
+            <span class="nav-link-text ms-1">Items Check-In</span>
+          </a>
+
+          <div class="collapse" id="checkInMenu">
             <ul class="nav flex-column ps-3">
               <li class="nav-item">
-                <a class="nav-link text-white {{ Route::is('admin.customers') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.customers') }}">
-                  <i class="material-icons opacity-10">person</i> Clients & Companies
+                <a class="nav-link text-white {{ Route::is('admin.check_in.index') ? 'active bg-gradient-primary' : '' }}"
+                  href="{{ route('admin.check_in.index') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">list_alt</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Order Items List</span>
                 </a>
               </li>
+
               <li class="nav-item">
-                <a class="nav-link text-white {{ Route::is('admin.admins') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.admins') }}">
-                  <i class="material-icons opacity-10">engineering</i> System Admins
+                <a class="nav-link text-white {{ Route::is('admin.check_in.start') ? 'active bg-gradient-primary' : '' }}"
+                  href="{{ route('admin.check_in.start') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">start</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Start Check-In</span>
                 </a>
               </li>
+
               <li class="nav-item">
-                <a class="nav-link text-white {{ Route::is('admin.roles') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.roles') }}">
-                  <i class="material-icons opacity-10">admin_panel_settings</i> Roles & Permissions
+                <a class="nav-link text-white"
+                  href="{{ route('admin.check_in.print_labels', 1) }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">print</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Print Labels</span>
                 </a>
               </li>
             </ul>
           </div>
         </li>
 
-        {{-- ORDER MANAGEMENT --}}
-        <li class="nav-item mt-3">
-          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">Operations</h6>
-        </li>
+        <!-- WAREHOUSE MANAGEMENT MENU -->
+<li class="nav-item">
+  <a class="nav-link text-white d-flex align-items-center collapsed" href="#warehouseMenu"
+    data-bs-toggle="collapse" aria-expanded="false">
+    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+      <i class="material-icons opacity-10">warehouse</i>
+    </div>
+    <span class="nav-link-text ms-1">Warehouses</span>
+  </a>
+
+  <div class="collapse" id="warehouseMenu">
+    <ul class="nav flex-column ps-3">
+      <li class="nav-item">
+        <a class="nav-link text-white {{ Route::is('admin.warehouse.index') ? 'active bg-gradient-primary' : '' }}"
+          href="{{ route('admin.warehouse.index') }}">
+          <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="material-icons opacity-10">domain</i>
+          </div>
+          <span class="nav-link-text ms-1">All Warehouses</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link text-white {{ Route::is('admin.lots.index') ? 'active bg-gradient-primary' : '' }}"
+          href="{{ route('admin.lots.index') }}">
+          <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="material-icons opacity-10">layers</i>
+          </div>
+          <span class="nav-link-text ms-1">Lots Management</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link text-white {{ Route::is('admin.shelves.index') ? 'active bg-gradient-primary' : '' }}"
+          href="{{ route('admin.shelves.index') }}">
+          <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+            <i class="material-icons opacity-10">view_column</i>
+          </div>
+          <span class="nav-link-text ms-1">Shelves Management</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</li>
+
+
         <li class="nav-item">
-          <a class="nav-link text-white collapsed d-flex align-items-center" href="#ordersMenu" data-bs-toggle="collapse">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">rule</i>
-            </div>
-            <span class="nav-link-text ms-1">Order Management</span>
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#lineSchedulingMenu" 
+            data-bs-toggle="collapse" aria-expanded="false">
+              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                  <i class="material-icons opacity-10">precision_manufacturing</i>
+              </div>
+              <span class="nav-link-text ms-1">Line Scheduling</span>
+              <!-- <i class="material-icons ms-auto dropdown-icon">&#xE313;</i>  -->
           </a>
-          <div class="collapse" id="ordersMenu">
-            <ul class="nav flex-column ps-3">
-              <li><a class="nav-link text-white {{ Route::is('admin.reviewOrders') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.reviewOrders') }}"><i class="material-icons opacity-10">visibility</i> Review Orders</a></li>
-              <li><a class="nav-link text-white {{ Route::is('admin.approvedOrders') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.approvedOrders') }}"><i class="material-icons opacity-10">check_circle</i> Approved Orders</a></li>
-              <li><a class="nav-link text-white {{ Route::is('admin.declinedOrders') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.declinedOrders') }}"><i class="material-icons opacity-10">block</i> Declined Orders</a></li>
-              <li><a class="nav-link text-white {{ Route::is('admin.canceledOrders') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.canceledOrders') }}"><i class="material-icons opacity-10">cancel</i> Canceled Orders</a></li>
-              <li><a class="nav-link text-white {{ Route::is('admin.check_in.index') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.check_in.index') }}"><i class="material-icons opacity-10">list_alt</i> Order Items</a></li>
-              <li><a class="nav-link text-white {{ Route::is('admin.check_in.start') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.check_in.start') }}"><i class="material-icons opacity-10">start</i> Start Check-In</a></li>
-              <li><a class="nav-link text-white" href="{{ route('admin.check_in.print_labels', 1) }}"><i class="material-icons opacity-10">print</i> Print Labels</a></li>
-            </ul>
+          <!-- Dropdown Menu -->
+          <div class="collapse" id="lineSchedulingMenu">
+              <ul class="nav flex-column ps-3">
+                <li class="nav-item">
+                  <a class="nav-link text-white {{ Route::is('admin.productionLines') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.productionLines') }}">
+                    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                      <i class="material-icons opacity-10">precision_manufacturing</i>
+                    </div>
+                    <span class="nav-link-text ms-1">Manage Lines</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link text-white {{ Route::is('admin.scheduledOrders') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.scheduledOrders') }}">
+                    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                      <i class="material-icons opacity-10">pending_actions</i>
+                    </div>
+                    <span class="nav-link-text ms-1">Scheduled Orders</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link text-white {{ Route::is('admin.scheduledOrdersCalendar') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.scheduledOrdersCalendar') }}">
+                    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                      <i class="material-icons opacity-10">today</i>
+                    </div>
+                    <span class="nav-link-text ms-1">Calendar View</span>
+                  </a>
+                </li>
+              </ul>
           </div>
         </li>
 
-        {{-- PRODUCTION MANAGEMENT --}}
+
         <li class="nav-item">
-          <a class="nav-link text-white collapsed d-flex align-items-center" href="#productionMenu" data-bs-toggle="collapse">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">precision_manufacturing</i>
-            </div>
-            <span class="nav-link-text ms-1">Production</span>
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#productionMenu" 
+            data-bs-toggle="collapse" aria-expanded="false">
+              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                  <i class="material-icons opacity-10">qr_code_scanner</i>
+              </div>
+              <span class="nav-link-text ms-1">Production</span>
+              <!-- <i class="material-icons ms-auto dropdown-icon">&#xE313;</i> -->
           </a>
+          <!-- Dropdown Menu -->
           <div class="collapse" id="productionMenu">
             <ul class="nav flex-column ps-3">
-              <li><a class="nav-link text-white {{ Route::is('admin.productionLines') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.productionLines') }}"><i class="material-icons opacity-10">tune</i> Manage Lines</a></li>
-              <li><a class="nav-link text-white {{ Route::is('admin.scheduledOrders') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.scheduledOrders') }}"><i class="material-icons opacity-10">event</i> Scheduled Orders</a></li>
-              <li><a class="nav-link text-white {{ Route::is('admin.scheduledOrdersCalendar') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.scheduledOrdersCalendar') }}"><i class="material-icons opacity-10">calendar_month</i> Calendar</a></li>
-              <li><a class="nav-link text-white {{ Route::is('admin.manageProduction') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.manageProduction') }}"><i class="material-icons opacity-10">qr_code_scanner</i> Manage Production</a></li>
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.manageProduction') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.manageProduction') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">qr_code_scanner</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Manage Production</span>
+                </a>
+              </li>
             </ul>
           </div>
         </li>
 
-        {{-- DEFECTS + PACKAGING + DELIVERY --}}
+
         <li class="nav-item">
-          <a class="nav-link text-white collapsed d-flex align-items-center" href="#logisticsMenu" data-bs-toggle="collapse">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">local_shipping</i>
-            </div>
-            <span class="nav-link-text ms-1">Logistics</span>
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#defectsMenu" 
+            data-bs-toggle="collapse" aria-expanded="false">
+              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                  <i class="material-icons opacity-10">warning</i>
+              </div>
+              <span class="nav-link-text ms-1">Defects Management</span>
+              <!-- <i class="material-icons ms-auto dropdown-icon">&#xE313;</i> -->
           </a>
-          <div class="collapse" id="logisticsMenu">
+          <!-- Dropdown Menu -->
+          <div class="collapse" id="defectsMenu">
             <ul class="nav flex-column ps-3">
-              <li><a class="nav-link text-white {{ Route::is('admin.defects.index') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.defects.index') }}"><i class="material-icons opacity-10">report_problem</i> Defects</a></li>
-              <li><a class="nav-link text-white {{ Route::is('admin.defects.reports') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.defects.reports') }}"><i class="material-icons opacity-10">analytics</i> Defect Reports</a></li>
-              <li><a class="nav-link text-white {{ Route::is('admin.packaging.index') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.packaging.index') }}"><i class="material-icons opacity-10">package</i> Packaging</a></li>
-              <li><a class="nav-link text-white {{ Route::is('admin.deliveries') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.deliveries') }}"><i class="material-icons opacity-10">local_shipping</i> Delivery</a></li>
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.defects.index') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.defects.index') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">warning</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Manage Defects</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.defects.reports') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.defects.reports') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">warning</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Reports</span>
+                </a>
+              </li>
             </ul>
           </div>
         </li>
 
-        {{-- INVENTORY --}}
         <li class="nav-item">
-          <a class="nav-link text-white collapsed d-flex align-items-center" href="#inventoryMenu" data-bs-toggle="collapse">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">inventory</i>
-            </div>
-            <span class="nav-link-text ms-1">Inventory</span>
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#packagingMenu" 
+            data-bs-toggle="collapse" aria-expanded="false">
+              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                  <i class="material-icons opacity-10">local_shipping</i>
+              </div>
+              <span class="nav-link-text ms-1">Packaging</span>
+              <!-- <i class="material-icons ms-auto dropdown-icon">&#xE313;</i> -->
           </a>
-          <div class="collapse" id="inventoryMenu">
+          <!-- Dropdown Menu -->
+          <div class="collapse" id="packagingMenu">
             <ul class="nav flex-column ps-3">
-              <li><a class="nav-link text-white {{ Route::is('admin.inventory.items') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.inventory.items') }}"><i class="material-icons opacity-10">list</i> Items</a></li>
-              <li><a class="nav-link text-white {{ Route::is('admin.inventory.brands') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.inventory.brands') }}"><i class="material-icons opacity-10">branding_watermark</i> Brands</a></li>
-              <li><a class="nav-link text-white {{ Route::is('admin.inventory.categories') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.inventory.categories') }}"><i class="material-icons opacity-10">category</i> Categories</a></li>
-              <li><a class="nav-link text-white {{ Route::is('admin.inventory.warehouses') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.inventory.warehouses') }}"><i class="material-icons opacity-10">warehouse</i> Warehouses</a></li>
-              <li><a class="nav-link text-white {{ Route::is('admin.inventory.transfers') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.inventory.transfers') }}"><i class="material-icons opacity-10">compare_arrows</i> Transfers</a></li>
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.packaging.index') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.packaging.index') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">local_shipping</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Packaging</span>
+                </a>
+              </li>
             </ul>
           </div>
         </li>
 
-        {{-- SUPPORT --}}
+        <li class="nav-item">
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#deliveryMenu" 
+            data-bs-toggle="collapse" aria-expanded="false">
+              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                  <i class="material-icons opacity-10">local_shipping</i>
+              </div>
+              <span class="nav-link-text ms-1">Packaging & Delivery</span>
+              <!-- <i class="material-icons ms-auto dropdown-icon">&#xE313;</i> -->
+          </a>
+          <!-- Dropdown Menu -->
+          <div class="collapse" id="deliveryMenu">
+            <ul class="nav flex-column ps-3">
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.deliveries') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.deliveries') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">local_shipping</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Manage Deliveries</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+
+        <li class="nav-item mt-5">
+          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">INVENTORY MANAGEMENT</h6>
+        </li>
+        
+        <li class="nav-item">
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#inventoryItemsMenu" 
+            data-bs-toggle="collapse" aria-expanded="false">
+              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                <i class="material-icons opacity-10">show_chart</i>
+              </div>
+              <span class="nav-link-text ms-1">Stock Management</span>
+              <!-- <i class="material-icons ms-auto dropdown-icon">&#xE313;</i> -->
+          </a>
+          <!-- Dropdown Menu -->
+          <div class="collapse" id="inventoryItemsMenu">
+            <ul class="nav flex-column ps-3">
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.inventory.items') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.inventory.items') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <!-- <i class="fas fa-boxes"></i> -->
+                    <i class="material-icons opacity-10">inventory</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Inventory Items</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.inventory.brands') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.inventory.brands') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <!-- <i class="fas fa-copyright"></i> -->
+                    <i class="material-icons opacity-10">copyright</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Brands</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.inventory.categories') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.inventory.categories') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <!-- <i class="fas fa-tags"></i> -->
+                    <i class="material-icons opacity-10">style</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Categories</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.inventory.warehouses') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.inventory.warehouses') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <!-- <i class="fas fa-warehouse"></i> -->
+                    <i class="material-icons opacity-10">warehouse</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Warehouses</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.inventory.transfers') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.inventory.transfers') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <!-- <i class="fas fa-exchange-alt"></i> -->
+                    <i class="material-icons opacity-10">move_down</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Transfers</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+
         <li class="nav-item mt-3">
-          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">Support</h6>
+          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">SUPPORT</h6>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white" href="tel:+16147870056">
+          <a class="nav-link text-white " href="tel:+16147870056">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">support_agent</i>
             </div>
@@ -197,7 +473,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-white" href="mailto:info@datapluzz.com">
+          <a class="nav-link text-white " href="mailto:info@datapluzz.com">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">mail</i>
             </div>
@@ -206,16 +482,18 @@
         </li>
       </ul>
     </div>
-
-    {{-- LOGOUT --}}
     <div class="sidenav-footer position-absolute w-100 bottom-0">
-      <div class="mx-3">
-        <a class="btn bg-gradient-primary w-100" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">LOGOUT</a>
-      </div>
+        <div class="mx-3">
+            <!-- Logout button triggers the form submission -->
+            <a class="btn bg-gradient-primary w-100" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" type="button">LOGOUT</a>
+        </div>
     </div>
-    <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" style="display: none;">@csrf</form>
-  </aside>
 
+    <!-- Hidden logout form -->
+    <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" style="display: none;">
+        @csrf
+    </form>
+  </aside>
   <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
     <!-- Navbar -->
      <nav class="navbar navbar-expand-lg bg-white shadow-sm rounded-bottom mb-4">

@@ -86,16 +86,27 @@
                         <hr />
 
                         <!-- Approve or Decline Order -->
-                        <div class="d-flex justify-content-end mt-4">
-                            <!-- Approve Order -->
-                            <form action="{{ route('admin.approveOrder', $order->id) }}" method="POST" style="display:inline;">
-                                @csrf
-                                <button type="submit" class="btn btn-success me-2">Approve Order</button>
-                            </form>
+                        <div class="d-flex justify-content-between align-items-center mt-4 px-3">
+                            <!-- Back Button (Left) -->
+                            <a href="{{ url()->previous() }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back
+                            </a>
 
-                            <!-- Decline Order -->
-                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#declineOrderModal" style="display:inline;">Decline Order</button>
+                            <!-- Approve and Decline Buttons (Right) -->
+                            <div class="d-flex">
+                                <!-- Approve Order -->
+                                <form action="{{ route('admin.approveOrder', $order->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-success me-2">Approve Order</button>
+                                </form>
+
+                                <!-- Decline Order -->
+                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#declineOrderModal" style="display:inline;">
+                                    Decline Order
+                                </button>
+                            </div>
                         </div>
+
 
                         <!-- Decline Order Modal -->
                         <div class="modal fade" id="declineOrderModal" tabindex="-1" aria-labelledby="declineOrderModalLabel" aria-hidden="true">

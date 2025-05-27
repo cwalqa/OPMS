@@ -9,7 +9,7 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
 
-      <form action="{{ route('admin.warehouse.lots.store', ['warehouse' => 0]) }}" method="POST" id="createLotForm">
+      <form action="{{ route('admin.lots.store', ['warehouse' => 0]) }}" method="POST" id="createLotForm">
         @csrf
         <div class="modal-body p-4">
 

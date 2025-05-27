@@ -242,28 +242,33 @@ Route::prefix('admin', )->name('admin.')->middleware(['auth:admin'])->group(func
     });
 
 
-    Route::prefix('warehouse')->name('warehouse.')->group(function () {
-        Route::get('/', [WarehouseController::class, 'index'])->name('index');
-        Route::post('/', [WarehouseController::class, 'store'])->name('store');
-        Route::put('/{warehouse}', [WarehouseController::class, 'update'])->name('update');
-        Route::delete('/{warehouse}', [WarehouseController::class, 'destroy'])->name('destroy');
+    // Warehouses
+Route::prefix('warehouse')->name('warehouse.')->group(function () {
+    Route::get('/', [WarehouseController::class, 'index'])->name('index');
+    Route::post('/', [WarehouseController::class, 'store'])->name('store');
+    Route::put('/{warehouse}', [WarehouseController::class, 'update'])->name('update');
+    Route::delete('/{warehouse}', [WarehouseController::class, 'destroy'])->name('destroy');
 
-        // Lots nested under warehouse
-        Route::get('{warehouse}/lots', [WarehouseController::class, 'lots'])->name('lots.index');
-        Route::post('{warehouse}/lots', [WarehouseController::class, 'storeLot'])->name('lots.store');
-        Route::put('{warehouse}/lots/{lot}', [WarehouseController::class, 'updateLot'])->name('lots.update');
-        Route::delete('{warehouse}/lots/{lot}', [WarehouseController::class, 'destroyLot'])->name('lots.destroy');
+    // Warehouse-specific API helpers
+    Route::get('/{warehouse}/api/lots', [WarehouseController::class, 'getWarehouseLots'])->name('api.lots');
+    Route::get('/{warehouse}/api/shelves', [WarehouseController::class, 'getWarehouseShelves'])->name('api.shelves');
+});
 
-        // Shelves nested under warehouse
-        Route::get('{warehouse}/shelves', [WarehouseController::class, 'warehouseShelves'])->name('shelves.index');
-        Route::post('{warehouse}/shelves', [WarehouseController::class, 'storeShelfFromWarehouse'])->name('shelves.store');
-        Route::put('{warehouse}/shelves/{shelf}', [WarehouseController::class, 'updateShelf'])->name('shelves.update');
-        Route::delete('{warehouse}/shelves/{shelf}', [WarehouseController::class, 'destroyShelf'])->name('shelves.destroy');
-        
-        // Alternative API routes in warehouse controller (as backup)
-        Route::get('/{warehouse}/api/lots', [WarehouseController::class, 'getWarehouseLots'])->name('api.lots');
-        Route::get('/{warehouse}/api/shelves', [WarehouseController::class, 'getWarehouseShelves'])->name('api.shelves');
-    });
+// Lots (accessible without warehouse ID)
+Route::prefix('lots')->name('lots.')->group(function () {
+    Route::get('/', [WarehouseController::class, 'lots'])->name('index');
+    Route::post('/', [WarehouseController::class, 'storeLot'])->name('store');
+    Route::put('/{lot}', [WarehouseController::class, 'updateLot'])->name('update');
+    Route::delete('/{lot}', [WarehouseController::class, 'destroyLot'])->name('destroy');
+});
+
+// Shelves (accessible without warehouse ID)
+Route::prefix('shelves')->name('shelves.')->group(function () {
+    Route::get('/', [WarehouseController::class, 'warehouseShelves'])->name('index');
+    Route::post('/', [WarehouseController::class, 'storeShelfFromWarehouse'])->name('store');
+    Route::put('/{shelf}', [WarehouseController::class, 'updateShelf'])->name('update');
+    Route::delete('/{shelf}', [WarehouseController::class, 'destroyShelf'])->name('destroy');
+});
 
     
     // Production line management

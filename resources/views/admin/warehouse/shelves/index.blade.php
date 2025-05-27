@@ -100,7 +100,7 @@
 // Pre-generate warehouse URLs in Blade and pass to JavaScript
 const warehouseUrls = {
     @foreach($warehouses as $wh)
-        {{ $wh->id }}: "{{ route('admin.warehouse.shelves.index', $wh->id) }}",
+        {{ $wh->id }}: "{{ route('admin.shelves.index', $wh->id) }}",
     @endforeach
 };
 
