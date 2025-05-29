@@ -57,7 +57,7 @@
     <hr class="horizontal light mt-0 mb-2">
     <div class="collapse navbar-collapse  w-auto " id="sidenav-collapse-main">
       <ul class="navbar-nav">
-        <li class="nav-item mt-3">
+        <li class="nav-item mt-2">
           <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">OVERVIEW</h6>
         </li>
         <li class="nav-item">
@@ -69,10 +69,10 @@
           </a>
         </li>
 
-        <li class="nav-item mt-3">
+        <!-- USER MANAGEMENT -->
+        <li class="nav-item mt-4">
           <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">USER MANAGEMENT</h6>
         </li>
-        
 
         <li class="nav-item">
           <a class="nav-link text-white d-flex align-items-center collapsed" href="#userManagementMenu" 
@@ -81,7 +81,6 @@
                   <i class="material-icons opacity-10">group</i>
               </div>
               <span class="nav-link-text ms-1">User Management</span>
-              <!-- <i class="material-icons ms-auto dropdown-icon">expand_more</i> -->
           </a>
 
           <!-- Dropdown Menu -->
@@ -103,11 +102,12 @@
                       </a>
                   </li>
               </ul>
-          </div>
-        </li>
+            </div>
+          </li>
 
-        <li class="nav-item mt-5">
-          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">ORDER PROCESSING MODULE</h6>
+        <!-- ORDER REVIEW -->
+        <li class="nav-item mt-4">
+          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">ORDER REVIEWS</h6>
         </li>
 
         <li class="nav-item">
@@ -117,7 +117,6 @@
                   <i class="material-icons opacity-10">rule</i>
               </div>
               <span class="nav-link-text ms-1">Orders</span>
-              <!-- <i class="material-icons ms-auto dropdown-icon">&#xE313;</i> -->
           </a>
           <!-- Dropdown Menu -->
           <div class="collapse" id="frontDeskMenu">
@@ -155,6 +154,56 @@
                   </a>
                 </li>
               </ul>
+          </div>
+        </li>
+
+        <!-- ITEMS CHECK-IN MENU -->
+        <li class="nav-item mt-4">
+          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">ITEMS CHECK-IN</h6>
+        </li>
+
+        <!-- WAREHOUSE MANAGEMENT MENU -->
+        <li class="nav-item">
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#warehouseMenu"
+            data-bs-toggle="collapse" aria-expanded="false">
+            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="material-icons opacity-10">warehouse</i>
+            </div>
+            <span class="nav-link-text ms-1">Warehouses</span>
+          </a>
+
+          <div class="collapse" id="warehouseMenu">
+            <ul class="nav flex-column ps-3">
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.warehouse.index') ? 'active bg-gradient-primary' : '' }}"
+                  href="{{ route('admin.warehouse.index') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">domain</i>
+                  </div>
+                  <span class="nav-link-text ms-1">All Warehouses</span>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.lots.index') ? 'active bg-gradient-primary' : '' }}"
+                  href="{{ route('admin.lots.index') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">layers</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Lots Management</span>
+                </a>
+              </li>
+
+              <li class="nav-item">
+                <a class="nav-link text-white {{ Route::is('admin.shelves.index') ? 'active bg-gradient-primary' : '' }}"
+                  href="{{ route('admin.shelves.index') }}">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">view_column</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Shelves Management</span>
+                </a>
+              </li>
+            </ul>
           </div>
         </li>
 
@@ -203,52 +252,6 @@
           </div>
         </li>
 
-        <!-- WAREHOUSE MANAGEMENT MENU -->
-<li class="nav-item">
-  <a class="nav-link text-white d-flex align-items-center collapsed" href="#warehouseMenu"
-    data-bs-toggle="collapse" aria-expanded="false">
-    <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-      <i class="material-icons opacity-10">warehouse</i>
-    </div>
-    <span class="nav-link-text ms-1">Warehouses</span>
-  </a>
-
-  <div class="collapse" id="warehouseMenu">
-    <ul class="nav flex-column ps-3">
-      <li class="nav-item">
-        <a class="nav-link text-white {{ Route::is('admin.warehouse.index') ? 'active bg-gradient-primary' : '' }}"
-          href="{{ route('admin.warehouse.index') }}">
-          <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-            <i class="material-icons opacity-10">domain</i>
-          </div>
-          <span class="nav-link-text ms-1">All Warehouses</span>
-        </a>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link text-white {{ Route::is('admin.lots.index') ? 'active bg-gradient-primary' : '' }}"
-          href="{{ route('admin.lots.index') }}">
-          <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-            <i class="material-icons opacity-10">layers</i>
-          </div>
-          <span class="nav-link-text ms-1">Lots Management</span>
-        </a>
-      </li>
-
-      <li class="nav-item">
-        <a class="nav-link text-white {{ Route::is('admin.shelves.index') ? 'active bg-gradient-primary' : '' }}"
-          href="{{ route('admin.shelves.index') }}">
-          <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-            <i class="material-icons opacity-10">view_column</i>
-          </div>
-          <span class="nav-link-text ms-1">Shelves Management</span>
-        </a>
-      </li>
-    </ul>
-  </div>
-</li>
-
-
         <li class="nav-item">
           <a class="nav-link text-white d-flex align-items-center collapsed" href="#lineSchedulingMenu" 
             data-bs-toggle="collapse" aria-expanded="false">
@@ -289,6 +292,10 @@
           </div>
         </li>
 
+        <!-- PRODUCTION MENU -->
+        <li class="nav-item mt-4">
+          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">PRODUCTION MANAGEMENT</h6>
+        </li>
 
         <li class="nav-item">
           <a class="nav-link text-white d-flex align-items-center collapsed" href="#productionMenu" 
@@ -314,14 +321,13 @@
           </div>
         </li>
 
-
         <li class="nav-item">
           <a class="nav-link text-white d-flex align-items-center collapsed" href="#defectsMenu" 
             data-bs-toggle="collapse" aria-expanded="false">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                   <i class="material-icons opacity-10">warning</i>
               </div>
-              <span class="nav-link-text ms-1">Defects Management</span>
+              <span class="nav-link-text ms-1">Defects</span>
               <!-- <i class="material-icons ms-auto dropdown-icon">&#xE313;</i> -->
           </a>
           <!-- Dropdown Menu -->
@@ -347,11 +353,16 @@
           </div>
         </li>
 
+        <!-- PACKAGING AND DELIVERY MENU -->
+        <li class="nav-item mt-4">
+          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">PACKAGING AND DELIVERY</h6>
+        </li>
+
         <li class="nav-item">
           <a class="nav-link text-white d-flex align-items-center collapsed" href="#packagingMenu" 
             data-bs-toggle="collapse" aria-expanded="false">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-                  <i class="material-icons opacity-10">local_shipping</i>
+                  <i class="material-icons opacity-10">inventory_2</i>
               </div>
               <span class="nav-link-text ms-1">Packaging</span>
               <!-- <i class="material-icons ms-auto dropdown-icon">&#xE313;</i> -->
@@ -362,9 +373,9 @@
               <li class="nav-item">
                 <a class="nav-link text-white {{ Route::is('admin.packaging.index') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.packaging.index') }}">
                   <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-                    <i class="material-icons opacity-10">local_shipping</i>
+                    <i class="material-icons opacity-10">inventory_2</i>
                   </div>
-                  <span class="nav-link-text ms-1">Packaging</span>
+                  <span class="nav-link-text ms-1">Item Packaging</span>
                 </a>
               </li>
             </ul>
@@ -377,7 +388,7 @@
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                   <i class="material-icons opacity-10">local_shipping</i>
               </div>
-              <span class="nav-link-text ms-1">Packaging & Delivery</span>
+              <span class="nav-link-text ms-1">Delivery</span>
               <!-- <i class="material-icons ms-auto dropdown-icon">&#xE313;</i> -->
           </a>
           <!-- Dropdown Menu -->
@@ -395,26 +406,23 @@
           </div>
         </li>
 
-        <li class="nav-item mt-5">
+        <!-- <li class="nav-item mt-4">
           <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">INVENTORY MANAGEMENT</h6>
-        </li>
+        </li> -->
         
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <a class="nav-link text-white d-flex align-items-center collapsed" href="#inventoryItemsMenu" 
             data-bs-toggle="collapse" aria-expanded="false">
               <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                 <i class="material-icons opacity-10">show_chart</i>
               </div>
               <span class="nav-link-text ms-1">Stock Management</span>
-              <!-- <i class="material-icons ms-auto dropdown-icon">&#xE313;</i> -->
           </a>
-          <!-- Dropdown Menu -->
           <div class="collapse" id="inventoryItemsMenu">
             <ul class="nav flex-column ps-3">
               <li class="nav-item">
                 <a class="nav-link text-white {{ Route::is('admin.inventory.items') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.inventory.items') }}">
                   <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-                    <!-- <i class="fas fa-boxes"></i> -->
                     <i class="material-icons opacity-10">inventory</i>
                   </div>
                   <span class="nav-link-text ms-1">Inventory Items</span>
@@ -423,7 +431,6 @@
               <li class="nav-item">
                 <a class="nav-link text-white {{ Route::is('admin.inventory.brands') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.inventory.brands') }}">
                   <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-                    <!-- <i class="fas fa-copyright"></i> -->
                     <i class="material-icons opacity-10">copyright</i>
                   </div>
                   <span class="nav-link-text ms-1">Brands</span>
@@ -432,7 +439,6 @@
               <li class="nav-item">
                 <a class="nav-link text-white {{ Route::is('admin.inventory.categories') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.inventory.categories') }}">
                   <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-                    <!-- <i class="fas fa-tags"></i> -->
                     <i class="material-icons opacity-10">style</i>
                   </div>
                   <span class="nav-link-text ms-1">Categories</span>
@@ -441,7 +447,6 @@
               <li class="nav-item">
                 <a class="nav-link text-white {{ Route::is('admin.inventory.warehouses') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.inventory.warehouses') }}">
                   <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-                    <!-- <i class="fas fa-warehouse"></i> -->
                     <i class="material-icons opacity-10">warehouse</i>
                   </div>
                   <span class="nav-link-text ms-1">Warehouses</span>
@@ -450,7 +455,6 @@
               <li class="nav-item">
                 <a class="nav-link text-white {{ Route::is('admin.inventory.transfers') ? 'active bg-gradient-primary' : '' }}" href="{{ route('admin.inventory.transfers') }}">
                   <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-                    <!-- <i class="fas fa-exchange-alt"></i> -->
                     <i class="material-icons opacity-10">move_down</i>
                   </div>
                   <span class="nav-link-text ms-1">Transfers</span>
@@ -458,27 +462,43 @@
               </li>
             </ul>
           </div>
+        </li> -->
+
+        <li class="nav-item mt-4">
+          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">SYSTEM SUPPORT</h6>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white d-flex align-items-center collapsed" href="#supportItemsMenu" 
+            data-bs-toggle="collapse" aria-expanded="false">
+              <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                <i class="material-icons opacity-10">support</i>
+              </div>
+              <span class="nav-link-text ms-1">System Support</span>
+          </a>
+          <!-- Dropdown Menu -->
+          <div class="collapse" id="supportItemsMenu">
+            <ul class="nav flex-column ps-3">
+              <li class="nav-item">
+                <a class="nav-link text-white " href="tel:+16147870056">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <!-- <i class="fas fa-boxes"></i> -->
+                    <i class="material-icons opacity-10">support_agent</i>
+                  </div>
+                  <span class="nav-link-text ms-1">DataPluzz 24HR Support</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-white " href="mailto:info@datapluzz.com">
+                  <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+                    <i class="material-icons opacity-10">contact_support</i>
+                  </div>
+                  <span class="nav-link-text ms-1">Mail Support Ticket</span>
+                </a>
+              </li>
+            </ul>
+          </div>
         </li>
 
-        <li class="nav-item mt-3">
-          <h6 class="ps-4 ms-2 text-uppercase text-xs text-white font-weight-bolder opacity-8">SUPPORT</h6>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-white " href="tel:+16147870056">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">support_agent</i>
-            </div>
-            <span class="nav-link-text ms-1">DataPluzz Support Desk</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-white " href="mailto:info@datapluzz.com">
-            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
-              <i class="material-icons opacity-10">mail</i>
-            </div>
-            <span class="nav-link-text ms-1">Mail Support Ticket</span>
-          </a>
-        </li>
       </ul>
     </div>
     <div class="sidenav-footer position-absolute w-100 bottom-0">
