@@ -26,7 +26,7 @@
                                     <th class="text-uppercase text-primary text-sm font-weight-bolder opacity-10 ps-2">Full Name</th>
                                     <th class="text-uppercase text-primary text-sm font-weight-bolder opacity-10 ps-2">Email</th>
                                     <th class="text-uppercase text-primary text-sm font-weight-bolder opacity-10 ps-2">Roles</th>
-                                    <th class="text-uppercase text-primary text-sm font-weight-bolder opacity-10 ps-2">Permissions</th>
+                                    <!-- <th class="text-uppercase text-primary text-sm font-weight-bolder opacity-10 ps-2">Permissions</th> -->
                                     <th class="text-uppercase text-primary text-sm font-weight-bolder opacity-10">Actions</th>
                                 </tr>
                             </thead>
@@ -49,13 +49,13 @@
                                             @endforeach
                                         </p>
                                     </td>
-                                    <td>
+                                    <!-- <td>
                                         <p class="text-xs font-weight-bold mb-0">
                                             @foreach($admin->roles->pluck('permissions')->flatten() as $permission)
                                                 <span class="badge bg-success">{{ $permission->name }}</span>
                                             @endforeach
                                         </p>
-                                    </td>
+                                    </td> -->
                                     <td>
                                         <button class="btn btn-secondary btn-sm edit-admin-btn" 
                                                 data-bs-toggle="modal" 

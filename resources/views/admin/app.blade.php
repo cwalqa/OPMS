@@ -25,25 +25,24 @@
 
   <!-- CSS Files -->
   <link id="pagestyle" href="{{ asset('assets/css/material-dashboard.css?v=3.1.0') }}" rel="stylesheet"/>
-
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- FullCalendar CSS and JS -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <!-- FullCalendar CSS and JS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 
 
-    <style>
+  <style>
 
-      a[aria-expanded="true"] .dropdown-arrow {
-        transform: rotate(180deg);
-        transition: transform 0.3s ease;
-      }
+    a[aria-expanded="true"] .dropdown-arrow {
+      transform: rotate(180deg);
+      transition: transform 0.3s ease;
+    }
 
-    </style>
+  </style>
 
 
-@stack('styles')
+  @stack('styles')
 </head>
 
 <body class="g-sidenav-show  bg-gray-200">
@@ -720,7 +719,7 @@
     });
   </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> -->
 
 
 @stack('scripts')
