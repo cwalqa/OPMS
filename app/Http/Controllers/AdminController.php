@@ -637,14 +637,20 @@ public function dashboard()
                 ];
             });
 
+            $startOfMonth = Carbon::now()->startOfMonth();
+            $endOfMonth = Carbon::now()->endOfMonth();
+
             $topOrderedItemsRaw = \DB::table('quickbooks_estimate_items')
                 ->select('sku', \DB::raw('SUM(quantity) as total_quantity'))
+                ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
                 ->groupBy('sku')
                 ->orderByDesc('total_quantity')
                 ->limit(5)
                 ->get();
 
-            $totalOrderedQuantity = \DB::table('quickbooks_estimate_items')->sum('quantity');
+            $totalOrderedQuantity = \DB::table('quickbooks_estimate_items')
+                ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+                ->sum('quantity');
 
             $topOrderedItems = $topOrderedItemsRaw->map(function ($item) {
                 $details = \App\Models\QuickbooksItem::where('item_id', $item->sku)->first();

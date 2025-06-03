@@ -33,15 +33,19 @@
       transition: transform 0.3s ease;
     }
 
+    .bg-light-grey {
+        background-color: #65676b !important; /* Very light grey */
+    }
+
   </style>
 
 </head>
 
 <body class="g-sidenav-show  bg-gray-200">
-  <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3   bg-gradient-dark" id="sidenav-main">
+  <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3 bg-light-grey" id="sidenav-main">
     <div class="sidenav-header">
       <i class="fas fa-times p-3 cursor-pointer text-white opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
-      <a class="navbar-brand m-0" href="https://datapluzz.com" target="_blank">
+      <a class="navbar-brand m-0" href="" target="_blank">
         <img src="{{ asset('assets/img/logos/cwi.png') }}" class="navbar-brand-img h-100" alt="main_logo">
         <span class="ms-1 font-weight-bold text-white">ColorWrap Inc.</span>
       </a>
@@ -668,13 +672,16 @@
           <div class="card h-100 shadow-sm">
             <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
               <h6 class="m-0">
-                <i class="fas fa-boxes me-2"></i> Top 5 Ordered Items
+                <i class="fas fa-boxes me-2"></i> Top 5 Ordered Items in {{ now()->format('F Y') }}
               </h6>
-              <span class="badge bg-light text-primary">{{ $totalOrders }} Orders</span>
+              <span class="badge bg-light text-primary">
+                {{ number_format($totalOrderedQuantity) }} Items
+              </span>
             </div>
+
             <div class="card-body">
               @if($topOrderedItems->isEmpty())
-                <p class="text-muted">No order data available yet.</p>
+                <p class="text-muted mb-0">No order data available for {{ now()->format('F Y') }}.</p>
               @else
                 <ul class="list-group list-group-flush">
                   @foreach($topOrderedItems as $item)
@@ -685,7 +692,9 @@
                       <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1">
                           <strong>{{ \Illuminate\Support\Str::limit($item->name, 30) }}</strong>
-                          <div class="small text-muted">SKU: {{ $item->sku }} | Qty: {{ $item->total_quantity }}</div>
+                          <div class="small text-muted">
+                            SKU: {{ $item->sku }} | Qty: {{ number_format($item->total_quantity) }}
+                          </div>
                           <div class="progress mt-2" style="height: 6px;">
                             <div class="progress-bar bg-info" style="width: {{ $percentage }}%" role="progressbar"></div>
                           </div>
@@ -699,6 +708,7 @@
             </div>
           </div>
         </div>
+
 
         <!-- Top Clients This Month -->
         <div class="col-md-12 col-lg-6 mb-4">
