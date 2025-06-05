@@ -83,7 +83,15 @@
                                             <div class="modal-body">
                                                 <form action="{{ route('admin.editSchedule', $schedule->id) }}" method="POST">
                                                     @csrf
-                                                    @method('PUT')
+                                                    @if($errors->any())
+                                                        <div class="alert alert-danger">
+                                                            <ul>
+                                                                @foreach($errors->all() as $error)
+                                                                    <li>{{ $error }}</li>
+                                                                @endforeach
+                                                            </ul>
+                                                        </div>
+                                                    @endif
                                                     <div class="form-group mb-3">
                                                         <label for="schedule_date">Schedule Date</label>
                                                         <input type="date" class="form-control" id="schedule_date" name="schedule_date" value="{{ $schedule->schedule_date }}" required>

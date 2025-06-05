@@ -408,12 +408,18 @@ class AdminController extends Controller
     public function editProductionLine(Request $request, $id)
     {
         // Validate the input
-        $request->validate([
-            'line_name' => 'required|string|max:255',
-            'max_quantity' => 'required|integer',
-            'line_manager_id' => 'required|exists:users,id', // Assuming line managers are stored in 'users' table
-            'line_status' => 'required|string|in:available,in production,offline',
-        ]);
+        try {
+            $validated = $request->validate([
+                'line_name' => 'required|string|max:255',
+                'max_quantity' => 'required|integer',
+                'line_manager_id' => 'required|exists:quickbooks_admin,id',
+                'line_status' => 'required|string|in:available,in production,offline',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation failed', $e->errors());
+            return back()->withErrors($e->errors())->withInput();
+        }
+
 
         // Find the production line by ID
         $productionLine = ProductionLine::findOrFail($id);
@@ -538,18 +544,45 @@ class AdminController extends Controller
 
     public function editSchedule(Request $request, $id)
     {
+        // Validate incoming request
         $request->validate([
             'schedule_date' => 'required|date',
+            'deadline_date' => 'required|date|after_or_equal:schedule_date',
             'schedule_status' => 'required|string'
         ]);
 
-        $order = QuickbooksEstimates::findOrFail($id);
-        $order->schedule_date = $request->schedule_date;
-        $order->schedule_status = $request->schedule_status;
-        $order->save();
+        // Retrieve the existing schedule
+        $schedule = ProductionSchedule::findOrFail($id);
 
+        // Update the schedule fields
+        $schedule->schedule_date = $request->schedule_date;
+        $schedule->deadline_date = $request->deadline_date;
+        $schedule->schedule_status = $request->schedule_status;
+        $schedule->save();
+
+        // Optionally log the update in OrderItemStageLog
+        $item = QuickbooksEstimateItems::find($schedule->item_id);
+        if ($item) {
+            OrderItemStageLog::create([
+                'tracking_id' => $item->tracking_id,
+                'estimate_item_sku' => $item->sku,
+                'stage' => 'rescheduled',
+                'comments' => 'Production schedule updated.',
+                'meta' => [
+                    'updated_by' => auth('admin')->user()?->name ?? 'System',
+                    'new_schedule_date' => $request->schedule_date,
+                    'new_deadline_date' => $request->deadline_date,
+                    'new_status' => $request->schedule_status,
+                ],
+                'timestamp' => now(),
+            ]);
+        }
+
+        // Redirect with success message
         return redirect()->route('admin.scheduledOrders')->with('success', 'Production schedule updated successfully.');
     }
+
+
 
     public function deleteSchedule($id)
     {

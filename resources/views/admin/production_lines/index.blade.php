@@ -72,7 +72,15 @@
                                             <div class="modal-body">
                                                 <form action="{{ route('admin.editProductionLine', $line->id) }}" method="POST">
                                                     @csrf
-                                                    @method('PUT')
+                                                    @if($errors->any())
+                                                        <div class="alert alert-danger">
+                                                            <ul>
+                                                                @foreach($errors->all() as $error)
+                                                                    <li>{{ $error }}</li>
+                                                                @endforeach
+                                                            </ul>
+                                                        </div>
+                                                    @endif
                                                     <div class="form-group">
                                                         <label for="line_name">Line Name</label>
                                                         <input type="text" class="form-control" name="line_name" value="{{ $line->line_name }}" required>
